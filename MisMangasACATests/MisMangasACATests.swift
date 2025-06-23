@@ -5,13 +5,13 @@
 //  Created by Juan Ignacio Antolini on 19/06/2025.
 //
 
-import Testing
-@testable import MisMangasACA
+import Foundation
+import XCTest            // <-- estándar de Unit Tests
+@testable import MisMangasACA   // permite acceder a los símbolos internos
 
-struct MisMangasACATests {
+final class MisMangasACATests: XCTestCase {
 
-    @Test func example() async throws {
-        // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+    func test_dummy() {
+        XCTAssertTrue(true)
     }
-
 }

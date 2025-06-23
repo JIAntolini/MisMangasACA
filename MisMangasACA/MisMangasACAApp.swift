@@ -10,22 +10,34 @@ import SwiftData
 
 @main
 struct MisMangasACAApp: App {
-    var sharedModelContainer: ModelContainer = {
+
+    /// Contenedor de modelos compartido para toda la app
+    /// Incluye todas las entidades SwiftData que ya definimos.
+    /// Se crea una única vez y se inyecta con `.modelContainer(_:)`.
+    private var sharedModelContainer: ModelContainer = {
+        // ⛑️ Mantén esta lista sincronizada con tus @Model existentes
         let schema = Schema([
-            Item.self,
+            MangaEntity.self,
+            GenreEntity.self,
+            ThemeEntity.self,
+            DemographicEntity.self,
+            AuthorEntity.self
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+
+        let configuration = ModelConfiguration(schema: schema,
+                                               isStoredInMemoryOnly: true)
 
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            return try ModelContainer(for: schema,
+                                      configurations: [configuration])
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            fatalError("❌ Could not create ModelContainer: \(error)")
         }
     }()
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainTabView()
         }
         .modelContainer(sharedModelContainer)
     }

@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		490F675D2E047605002D9EE1 /* MisMangasWatch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 490F673D2E047602002D9EE1 /* MisMangasWatch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		490F671D2E04749C002D9EE1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -14,20 +18,67 @@
 			remoteGlobalIDString = 490F670C2E047498002D9EE1;
 			remoteInfo = MisMangasACA;
 		};
-		490F67272E04749C002D9EE1 /* PBXContainerItemProxy */ = {
+		490F674A2E047605002D9EE1 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 490F67052E047498002D9EE1 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 490F670C2E047498002D9EE1;
-			remoteInfo = MisMangasACA;
+			remoteGlobalIDString = 490F673C2E047602002D9EE1;
+			remoteInfo = "MisMangasWatch Watch App";
+		};
+		490F67542E047605002D9EE1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 490F67052E047498002D9EE1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 490F673C2E047602002D9EE1;
+			remoteInfo = "MisMangasWatch Watch App";
+		};
+		490F675B2E047605002D9EE1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 490F67052E047498002D9EE1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 490F673C2E047602002D9EE1;
+			remoteInfo = "MisMangasWatch Watch App";
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		490F67612E047605002D9EE1 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				490F675D2E047605002D9EE1 /* MisMangasWatch Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		490F670D2E047498002D9EE1 /* MisMangasACA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MisMangasACA.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		490F671C2E04749C002D9EE1 /* MisMangasACATests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MisMangasACATests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		490F67262E04749C002D9EE1 /* MisMangasACAUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MisMangasACAUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		490F673D2E047602002D9EE1 /* MisMangasWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MisMangasWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		490F67492E047605002D9EE1 /* MisMangasWatch Watch AppTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "MisMangasWatch Watch AppTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		490F67532E047605002D9EE1 /* MisMangasWatch Watch AppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "MisMangasWatch Watch AppUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		490F67742E04905A002D9EE1 /* Exceptions for "MisMangasACATests" folder in "MisMangasACA" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Mapper/MangaMapperTests.swift,
+			);
+			target = 490F670C2E047498002D9EE1 /* MisMangasACA */;
+		};
+		490F67752E04905A002D9EE1 /* Exceptions for "MisMangasACATests" folder in "MisMangasACATests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Mapper/MangaMapperTests.swift,
+			);
+			target = 490F671B2E04749C002D9EE1 /* MisMangasACATests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		490F670F2E047498002D9EE1 /* MisMangasACA */ = {
@@ -37,12 +88,26 @@
 		};
 		490F671F2E04749C002D9EE1 /* MisMangasACATests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				490F67742E04905A002D9EE1 /* Exceptions for "MisMangasACATests" folder in "MisMangasACA" target */,
+				490F67752E04905A002D9EE1 /* Exceptions for "MisMangasACATests" folder in "MisMangasACATests" target */,
+			);
 			path = MisMangasACATests;
 			sourceTree = "<group>";
 		};
-		490F67292E04749C002D9EE1 /* MisMangasACAUITests */ = {
+		490F673E2E047602002D9EE1 /* MisMangasWatch Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = MisMangasACAUITests;
+			path = "MisMangasWatch Watch App";
+			sourceTree = "<group>";
+		};
+		490F674C2E047605002D9EE1 /* MisMangasWatch Watch AppTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "MisMangasWatch Watch AppTests";
+			sourceTree = "<group>";
+		};
+		490F67562E047605002D9EE1 /* MisMangasWatch Watch AppUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "MisMangasWatch Watch AppUITests";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -62,7 +127,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		490F67232E04749C002D9EE1 /* Frameworks */ = {
+		490F673A2E047602002D9EE1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		490F67462E047605002D9EE1 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		490F67502E047605002D9EE1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -77,7 +156,9 @@
 			children = (
 				490F670F2E047498002D9EE1 /* MisMangasACA */,
 				490F671F2E04749C002D9EE1 /* MisMangasACATests */,
-				490F67292E04749C002D9EE1 /* MisMangasACAUITests */,
+				490F673E2E047602002D9EE1 /* MisMangasWatch Watch App */,
+				490F674C2E047605002D9EE1 /* MisMangasWatch Watch AppTests */,
+				490F67562E047605002D9EE1 /* MisMangasWatch Watch AppUITests */,
 				490F670E2E047498002D9EE1 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -87,7 +168,9 @@
 			children = (
 				490F670D2E047498002D9EE1 /* MisMangasACA.app */,
 				490F671C2E04749C002D9EE1 /* MisMangasACATests.xctest */,
-				490F67262E04749C002D9EE1 /* MisMangasACAUITests.xctest */,
+				490F673D2E047602002D9EE1 /* MisMangasWatch Watch App.app */,
+				490F67492E047605002D9EE1 /* MisMangasWatch Watch AppTests.xctest */,
+				490F67532E047605002D9EE1 /* MisMangasWatch Watch AppUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -102,10 +185,12 @@
 				490F67092E047498002D9EE1 /* Sources */,
 				490F670A2E047498002D9EE1 /* Frameworks */,
 				490F670B2E047498002D9EE1 /* Resources */,
+				490F67612E047605002D9EE1 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				490F675C2E047605002D9EE1 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				490F670F2E047498002D9EE1 /* MisMangasACA */,
@@ -140,27 +225,72 @@
 			productReference = 490F671C2E04749C002D9EE1 /* MisMangasACATests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
-		490F67252E04749C002D9EE1 /* MisMangasACAUITests */ = {
+		490F673C2E047602002D9EE1 /* MisMangasWatch Watch App */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 490F67362E04749C002D9EE1 /* Build configuration list for PBXNativeTarget "MisMangasACAUITests" */;
+			buildConfigurationList = 490F675E2E047605002D9EE1 /* Build configuration list for PBXNativeTarget "MisMangasWatch Watch App" */;
 			buildPhases = (
-				490F67222E04749C002D9EE1 /* Sources */,
-				490F67232E04749C002D9EE1 /* Frameworks */,
-				490F67242E04749C002D9EE1 /* Resources */,
+				490F67392E047602002D9EE1 /* Sources */,
+				490F673A2E047602002D9EE1 /* Frameworks */,
+				490F673B2E047602002D9EE1 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				490F67282E04749C002D9EE1 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				490F67292E04749C002D9EE1 /* MisMangasACAUITests */,
+				490F673E2E047602002D9EE1 /* MisMangasWatch Watch App */,
 			);
-			name = MisMangasACAUITests;
+			name = "MisMangasWatch Watch App";
 			packageProductDependencies = (
 			);
-			productName = MisMangasACAUITests;
-			productReference = 490F67262E04749C002D9EE1 /* MisMangasACAUITests.xctest */;
+			productName = "MisMangasWatch Watch App";
+			productReference = 490F673D2E047602002D9EE1 /* MisMangasWatch Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
+		490F67482E047605002D9EE1 /* MisMangasWatch Watch AppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 490F67622E047606002D9EE1 /* Build configuration list for PBXNativeTarget "MisMangasWatch Watch AppTests" */;
+			buildPhases = (
+				490F67452E047605002D9EE1 /* Sources */,
+				490F67462E047605002D9EE1 /* Frameworks */,
+				490F67472E047605002D9EE1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				490F674B2E047605002D9EE1 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				490F674C2E047605002D9EE1 /* MisMangasWatch Watch AppTests */,
+			);
+			name = "MisMangasWatch Watch AppTests";
+			packageProductDependencies = (
+			);
+			productName = "MisMangasWatch Watch AppTests";
+			productReference = 490F67492E047605002D9EE1 /* MisMangasWatch Watch AppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		490F67522E047605002D9EE1 /* MisMangasWatch Watch AppUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 490F67652E047606002D9EE1 /* Build configuration list for PBXNativeTarget "MisMangasWatch Watch AppUITests" */;
+			buildPhases = (
+				490F674F2E047605002D9EE1 /* Sources */,
+				490F67502E047605002D9EE1 /* Frameworks */,
+				490F67512E047605002D9EE1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				490F67552E047605002D9EE1 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				490F67562E047605002D9EE1 /* MisMangasWatch Watch AppUITests */,
+			);
+			name = "MisMangasWatch Watch AppUITests";
+			packageProductDependencies = (
+			);
+			productName = "MisMangasWatch Watch AppUITests";
+			productReference = 490F67532E047605002D9EE1 /* MisMangasWatch Watch AppUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 /* End PBXNativeTarget section */
@@ -180,9 +310,16 @@
 						CreatedOnToolsVersion = 16.4;
 						TestTargetID = 490F670C2E047498002D9EE1;
 					};
-					490F67252E04749C002D9EE1 = {
+					490F673C2E047602002D9EE1 = {
 						CreatedOnToolsVersion = 16.4;
-						TestTargetID = 490F670C2E047498002D9EE1;
+					};
+					490F67482E047605002D9EE1 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = 490F673C2E047602002D9EE1;
+					};
+					490F67522E047605002D9EE1 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = 490F673C2E047602002D9EE1;
 					};
 				};
 			};
@@ -202,7 +339,9 @@
 			targets = (
 				490F670C2E047498002D9EE1 /* MisMangasACA */,
 				490F671B2E04749C002D9EE1 /* MisMangasACATests */,
-				490F67252E04749C002D9EE1 /* MisMangasACAUITests */,
+				490F673C2E047602002D9EE1 /* MisMangasWatch Watch App */,
+				490F67482E047605002D9EE1 /* MisMangasWatch Watch AppTests */,
+				490F67522E047605002D9EE1 /* MisMangasWatch Watch AppUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -222,7 +361,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		490F67242E04749C002D9EE1 /* Resources */ = {
+		490F673B2E047602002D9EE1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		490F67472E047605002D9EE1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		490F67512E047605002D9EE1 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -246,7 +399,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		490F67222E04749C002D9EE1 /* Sources */ = {
+		490F67392E047602002D9EE1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		490F67452E047605002D9EE1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		490F674F2E047605002D9EE1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -261,10 +428,20 @@
 			target = 490F670C2E047498002D9EE1 /* MisMangasACA */;
 			targetProxy = 490F671D2E04749C002D9EE1 /* PBXContainerItemProxy */;
 		};
-		490F67282E04749C002D9EE1 /* PBXTargetDependency */ = {
+		490F674B2E047605002D9EE1 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 490F670C2E047498002D9EE1 /* MisMangasACA */;
-			targetProxy = 490F67272E04749C002D9EE1 /* PBXContainerItemProxy */;
+			target = 490F673C2E047602002D9EE1 /* MisMangasWatch Watch App */;
+			targetProxy = 490F674A2E047605002D9EE1 /* PBXContainerItemProxy */;
+		};
+		490F67552E047605002D9EE1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 490F673C2E047602002D9EE1 /* MisMangasWatch Watch App */;
+			targetProxy = 490F67542E047605002D9EE1 /* PBXContainerItemProxy */;
+		};
+		490F675C2E047605002D9EE1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 490F673C2E047602002D9EE1 /* MisMangasWatch Watch App */;
+			targetProxy = 490F675B2E047605002D9EE1 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -484,24 +661,105 @@
 			};
 			name = Release;
 		};
-		490F67372E04749C002D9EE1 /* Debug */ = {
+		490F675F2E047605002D9EE1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 79G85LRUA5;
+				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = MisMangasWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = ar.jiadev.MisMangasACA;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = ar.jiadev.MisMangasACAUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = ar.jiadev.MisMangasACA.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = MisMangasACA;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.5;
 			};
 			name = Debug;
 		};
-		490F67382E04749C002D9EE1 /* Release */ = {
+		490F67602E047605002D9EE1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 79G85LRUA5;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = MisMangasWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = ar.jiadev.MisMangasACA;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ar.jiadev.MisMangasACA.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.5;
+			};
+			name = Release;
+		};
+		490F67632E047606002D9EE1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 79G85LRUA5;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "ar.jiadev.MisMangasWatch-Watch-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MisMangasWatch Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MisMangasWatch Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.5;
+			};
+			name = Debug;
+		};
+		490F67642E047606002D9EE1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 79G85LRUA5;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "ar.jiadev.MisMangasWatch-Watch-AppTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MisMangasWatch Watch App.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MisMangasWatch Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.5;
+			};
+			name = Release;
+		};
+		490F67662E047606002D9EE1 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
@@ -509,12 +767,33 @@
 				DEVELOPMENT_TEAM = 79G85LRUA5;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = ar.jiadev.MisMangasACAUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = "ar.jiadev.MisMangasWatch-Watch-AppUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = MisMangasACA;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_TARGET_NAME = "MisMangasWatch Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.5;
+			};
+			name = Debug;
+		};
+		490F67672E047606002D9EE1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 79G85LRUA5;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "ar.jiadev.MisMangasWatch-Watch-AppUITests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_TARGET_NAME = "MisMangasWatch Watch App";
+				WATCHOS_DEPLOYMENT_TARGET = 11.5;
 			};
 			name = Release;
 		};
@@ -548,11 +827,29 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		490F67362E04749C002D9EE1 /* Build configuration list for PBXNativeTarget "MisMangasACAUITests" */ = {
+		490F675E2E047605002D9EE1 /* Build configuration list for PBXNativeTarget "MisMangasWatch Watch App" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				490F67372E04749C002D9EE1 /* Debug */,
-				490F67382E04749C002D9EE1 /* Release */,
+				490F675F2E047605002D9EE1 /* Debug */,
+				490F67602E047605002D9EE1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		490F67622E047606002D9EE1 /* Build configuration list for PBXNativeTarget "MisMangasWatch Watch AppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				490F67632E047606002D9EE1 /* Debug */,
+				490F67642E047606002D9EE1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		490F67652E047606002D9EE1 /* Build configuration list for PBXNativeTarget "MisMangasWatch Watch AppUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				490F67662E047606002D9EE1 /* Debug */,
+				490F67672E047606002D9EE1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

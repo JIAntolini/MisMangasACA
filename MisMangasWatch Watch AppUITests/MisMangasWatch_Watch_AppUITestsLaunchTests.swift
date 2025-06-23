@@ -1,13 +1,13 @@
 //
-//  MisMangasACAUITestsLaunchTests.swift
-//  MisMangasACAUITests
+//  MisMangasWatch_Watch_AppUITestsLaunchTests.swift
+//  MisMangasWatch Watch AppUITests
 //
 //  Created by Juan Ignacio Antolini on 19/06/2025.
 //
 
 import XCTest
 
-final class MisMangasACAUITestsLaunchTests: XCTestCase {
+final class MisMangasWatch_Watch_AppUITestsLaunchTests: XCTestCase {
 
     override class var runsForEachTargetApplicationUIConfiguration: Bool {
         true

@@ -1,13 +1,13 @@
 //
-//  MisMangasACAUITests.swift
-//  MisMangasACAUITests
+//  MisMangasWatch_Watch_AppUITests.swift
+//  MisMangasWatch Watch AppUITests
 //
 //  Created by Juan Ignacio Antolini on 19/06/2025.
 //
 
 import XCTest
 
-final class MisMangasACAUITests: XCTestCase {
+final class MisMangasWatch_Watch_AppUITests: XCTestCase {
 
     override func setUpWithError() throws {
         // Put setup code here. This method is called before the invocation of each test method in the class.
