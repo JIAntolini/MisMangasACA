@@ -17,7 +17,7 @@ public struct MangaDTO: Decodable, Identifiable {
     let chapters: Int?
     let volumes: Int?
     let score: Double?
-    let status: String?             // “finished”, “publishing”, etc.
+    public let status: String?             // “finished”, “publishing”, etc.
     let startDate: Date?
     let endDate: Date?
     let mainPicture: String?

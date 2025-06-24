@@ -30,20 +30,30 @@ class AuthorMangasViewModel: ObservableObject {
     }
 
     func loadPage(_ page: Int) async {
-        isLoading = true
-        defer { isLoading = false }
+        // Modificamos isLoading en el main thread para evitar problemas de concurrencia con @Published
+        await MainActor.run {
+            self.isLoading = true
+        }
         do {
             let response = try await api.fetchMangasByAuthor(author.id, page: page, per: perPage)
-            if page == 1 {
-                mangas = response.data
-            } else {
-                mangas.append(contentsOf: response.data)
+            // Actualizamos las propiedades @Published en el main thread para mantener la coherencia con la UI
+            await MainActor.run {
+                if page == 1 {
+                    mangas = response.data
+                } else {
+                    mangas.append(contentsOf: response.data)
+                }
+                currentPage = response.metadata.page
+                isLastPage = response.data.isEmpty
+                isLoading = false
             }
-            currentPage = response.metadata.page
-            isLastPage = response.data.isEmpty
         } catch {
-            print("Error cargando mangas de autor: \(error)")
-            isLastPage = true
+            // Actualizamos las propiedades @Published en el main thread incluso en caso de error
+            await MainActor.run {
+                print("Error cargando mangas de autor: \(error)")
+                isLastPage = true
+                isLoading = false
+            }
         }
     }
 }
