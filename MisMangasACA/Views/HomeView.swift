@@ -24,7 +24,13 @@ struct HomeView: View {
                             await vm.searchMangas(with: query)
                         }
                     }
-
+                if !query.isEmpty {
+                    Button(action: { query = "" }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.gray)
+                    }
+                    .buttonStyle(.plain)
+                }
                 // Botón de filtro por género como icono
                 if !vm.genres.isEmpty {
                     Menu {

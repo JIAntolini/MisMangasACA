@@ -11,12 +11,26 @@ import Foundation
 @MainActor
 final class AuthorsViewModel: ObservableObject {
     @Published var authors: [AuthorDTO] = []
-    @Published var displayedAuthors: [AuthorDTO] = []
     @Published var isLoading = false
     @Published var error: String?
+    @Published var searchText: String = "" {
+        didSet {
+            currentPage = 1
+        }
+    }
 
     private let pageSize = 10
-    private var currentPage = 0
+    @Published private(set) var currentPage = 1
+
+    var displayedAuthors: [AuthorDTO] {
+        let filtered = searchText.isEmpty
+            ? authors
+            : authors.filter {
+                ($0.firstName.lowercased().contains(searchText.lowercased())) ||
+                ($0.lastName?.lowercased().contains(searchText.lowercased()) ?? false)
+            }
+        return Array(filtered.prefix(currentPage * pageSize))
+    }
 
     func loadAuthors() async {
         isLoading = true
@@ -29,7 +43,6 @@ final class AuthorsViewModel: ObservableObject {
                 let rhs = ($1.lastName?.lowercased() ?? "") + $1.firstName.lowercased()
                 return lhs < rhs
             }
-            displayedAuthors = Array(authors.prefix(pageSize))
             currentPage = 1
         } catch {
             self.error = error.localizedDescription
@@ -37,18 +50,21 @@ final class AuthorsViewModel: ObservableObject {
     }
     
     func loadNextPage() {
-        let start = displayedAuthors.count
-        let end = min(authors.count, start + pageSize)
-        guard start < end else { return }
-        displayedAuthors.append(contentsOf: authors[start..<end])
         currentPage += 1
     }
     
     /// Llama a esto desde la vista cuando el usuario scrollea cerca del final
     func loadNextPageIfNeeded(currentItem: AuthorDTO?) {
+        let filtered = searchText.isEmpty
+            ? authors
+            : authors.filter {
+                ($0.firstName.lowercased().contains(searchText.lowercased())) ||
+                ($0.lastName?.lowercased().contains(searchText.lowercased()) ?? false)
+            }
         guard let currentItem,
               let index = displayedAuthors.firstIndex(where: { $0.id == currentItem.id }),
-              index >= displayedAuthors.count - 5
+              index >= displayedAuthors.count - 5,
+              displayedAuthors.count < filtered.count
         else { return }
         loadNextPage()
     }

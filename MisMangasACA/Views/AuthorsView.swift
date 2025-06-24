@@ -13,7 +13,23 @@ struct AuthorsView: View {
 
     var body: some View {
         NavigationStack {
-            // Lista que muestra autores con soporte para carga progresiva (infinite scroll)
+            HStack {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.gray)
+                TextField("Buscar autor", text: $viewModel.searchText)
+                    .textFieldStyle(.roundedBorder)
+                    .disableAutocorrection(true)
+                if !viewModel.searchText.isEmpty {
+                    Button(action: {
+                        viewModel.searchText = ""
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.gray)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding([.horizontal, .top])
             List(viewModel.displayedAuthors, id: \.id) { author in
                 VStack(alignment: .leading) {
                     Text("\(author.firstName) \(author.lastName ?? "")")
@@ -55,6 +71,13 @@ struct AuthorsView: View {
                             .foregroundColor(.gray)
                     }
                     .padding(.top, 60)
+                }
+            }
+            .onAppear {
+                // Si la cantidad mostrada es igual a la página actual * pageSize, intenta cargar más (hasta llenar la pantalla)
+                if viewModel.displayedAuthors.count == viewModel.currentPage * 10 &&
+                    viewModel.displayedAuthors.count < viewModel.authors.count {
+                    viewModel.loadNextPage()
                 }
             }
         }
