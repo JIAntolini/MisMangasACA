@@ -145,17 +145,24 @@ open class APIService {
         return try await request(path: "/list/genres")
     }
     
-    /// Obtiene los mangas asociados a un género específico usando el endpoint /list/mangaByGenre/{genre}.
-    /// La API devuelve un array de MangaDTO (no paginado).
-    /// - Parameter genre: El nombre del género tal como lo devuelve la API, por ejemplo "Action"
-    /// - Returns: Array de MangaDTO
-    func fetchMangasByGenre(_ genre: String) async throws -> [MangaDTO] {
+    /// Obtiene los mangas asociados a un género específico usando el endpoint /list/mangaByGenre/{genre}, con soporte de paginación.
+    /// - Parameters:
+    ///   - genre: El nombre del género tal como lo devuelve la API, por ejemplo "Action"
+    ///   - page: Número de página a solicitar (por defecto 1)
+    ///   - per: Cantidad de mangas por página (por defecto 10)
+    /// - Returns: PaginatedResponse<MangaDTO> incluyendo la lista de mangas y los metadatos de paginación.
+    func fetchMangasByGenre(_ genre: String, page: Int = 1, per: Int = 10) async throws -> PaginatedResponse<MangaDTO> {
+        // Convierte el género a snake_case y codifica para la URL
         let snakeCase = genreToSnakeCase(genre)
         let encodedGenre = snakeCase.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? snakeCase
         let path = "/list/mangaByGenre/\(encodedGenre)"
-        // Decodifica el response como PaginatedResponse<MangaDTO> y retorna el array de mangas
-        let response: PaginatedResponse<MangaDTO> = try await request(path: path)
-        return response.data
+        // Armamos los parámetros de paginación para la URL
+        let queries = [
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "per",  value: "\(per)")
+        ]
+        // Realiza la petición genérica y retorna la respuesta paginada
+        return try await request(path: path, queryItems: queries)
     }
     
     /// Convierte un string de género a snake_case, reemplazando espacios y guiones por guión bajo, y diacríticos por su forma simple.

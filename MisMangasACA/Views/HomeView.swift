@@ -13,27 +13,45 @@ struct HomeView: View {
     
     var body: some View {
         NavigationStack {
-            // Filtro por género usando un menú desplegable
-            if !vm.genres.isEmpty {
-                Menu {
-                    Button("Todos", action: {
-                        vm.selectedGenre = nil
-                        query = ""
-                        Task { await vm.loadPage(1, forceReload: true) }
-                    })
-                    ForEach(vm.genres, id: \.self) { genre in
-                        Button(genre, action: {
-                            vm.selectedGenre = genre
-                            Task { await vm.loadMangasByGenre(genre) }
-                        })
+            HStack(spacing: 8) {
+                // Barra de búsqueda integrada
+                TextField("Buscar manga", text: $query)
+                    .textFieldStyle(.roundedBorder)
+                    .padding(.vertical, 6)
+                    .disableAutocorrection(true)
+                    .onSubmit {
+                        Task {
+                            await vm.searchMangas(with: query)
+                        }
                     }
-                } label: {
-                    Label(vm.selectedGenre ?? "Filtrar por género", systemImage: "line.3.horizontal.decrease.circle")
-                        .font(.subheadline)
+
+                // Botón de filtro por género como icono
+                if !vm.genres.isEmpty {
+                    Menu {
+                        Button("Todos", action: {
+                            vm.selectedGenre = nil
+                            query = ""
+                            Task { await vm.loadPage(1, forceReload: true) }
+                        })
+                        ForEach(vm.genres, id: \.self) { genre in
+                            Button(genre, action: {
+                                vm.selectedGenre = genre
+                                Task { await vm.loadMangasByGenre(genre) }
+                            })
+                        }
+                    } label: {
+                        // Solo ícono, sin texto
+                        Label("", systemImage: "line.3.horizontal.decrease.circle")
+                            .labelStyle(.iconOnly)
+                            .font(.title2)
+                            .foregroundColor(.accentColor)
+                            .padding(.trailing, 4)
+                    }
+                    .accessibilityLabel("Filtrar por género")
                 }
-                .padding(.horizontal)
-                .padding(.top, 4)
             }
+            .padding(.horizontal)
+            .padding(.top, 4)
             
             ScrollView {
                 LazyVStack(spacing: 16) {
@@ -68,13 +86,7 @@ struct HomeView: View {
                 }
             }
         }
-        .searchable(text: $query, placement: .navigationBarDrawer(displayMode: .always), prompt: "Buscar manga")
-        .onSubmit(of: .search) {
-            // Al presionar buscar en el teclado, ejecuta la búsqueda con la query actual
-            Task {
-                await vm.searchMangas(with: query)
-            }
-        }
+        // .searchable eliminado
         .onChange(of: query) { old, new in
             // Si se borra la búsqueda, recarga la página 1 para mostrar el top
             if new.isEmpty {

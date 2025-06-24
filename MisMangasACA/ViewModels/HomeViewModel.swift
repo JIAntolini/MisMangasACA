@@ -106,24 +106,31 @@ extension HomeViewModel {
         }
     }
 
-    /// Carga mangas de un género específico usando el endpoint /list/mangaByGenre/{genre}
-    func loadMangasByGenre(_ genre: String) async {
+    /// Carga mangas de un género específico usando el endpoint paginado /list/mangaByGenre/{genre}.
+    /// Ahora permite paginación infinita e integra el control de página y última página.
+    func loadMangasByGenre(_ genre: String, page: Int = 1, forceReload: Bool = false) async {
+        guard (!isLoadingPage && !isLastPage) || forceReload else { return }
         isLoadingPage = true
         defer { isLoadingPage = false }
+
         do {
-            let mangasByGenre = try await api.fetchMangasByGenre(genre)
-            mangas = mangasByGenre
-            currentPage = 1
-            isLastPage = true
-        } catch {
-            // Si el error es NSURLErrorDomain Code=-1011 (probablemente género inválido), solo muestra para debug puntual
-            #if DEBUG
-            if (error as? URLError)?.code == .userAuthenticationRequired {
-                // Ignora el error si es un 401 típico por filtro vacío/rápido
+            // Trae la página solicitada de mangas por género
+            let response = try await api.fetchMangasByGenre(genre, page: page, per: perPage)
+            if page == 1 || forceReload {
+                mangas = response.data
             } else {
-                print("Error al buscar mangas por género: \(error.localizedDescription)")
+                mangas.append(contentsOf: response.data)
             }
+            currentPage = response.metadata.page
+            // Si no hay más resultados, se marca como última página
+            isLastPage = response.data.isEmpty
+            selectedGenre = genre
+        } catch {
+            #if DEBUG
+            print("Error al buscar mangas por género: \(error.localizedDescription)")
             #endif
+            // Marca como última página para evitar loops infinitos en caso de error grave
+            isLastPage = true
         }
     }
 }
