@@ -8,8 +8,8 @@
 import Foundation
 
 // MARK: - MangaDTO
-public struct MangaDTO: Decodable {
-    let id: Int
+public struct MangaDTO: Decodable, Identifiable {
+    public let id: Int
     let title: String
     let titleJapanese: String?
     let titleEnglish: String?       // Nuevo campo

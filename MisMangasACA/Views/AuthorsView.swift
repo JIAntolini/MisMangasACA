@@ -31,14 +31,16 @@ struct AuthorsView: View {
             }
             .padding([.horizontal, .top])
             List(viewModel.displayedAuthors, id: \.id) { author in
-                VStack(alignment: .leading) {
-                    Text("\(author.firstName) \(author.lastName ?? "")")
-                        .font(.headline)
-                    if let nationality = author.nationality {
-                        Text("Nacionalidad: \(nationality)").font(.subheadline)
-                    }
-                    if let year = author.birthYear {
-                        Text("Año de nacimiento: \(year)").font(.subheadline)
+                NavigationLink(destination: AuthorMangasView(author: author)) {
+                    VStack(alignment: .leading) {
+                        Text("\(author.firstName) \(author.lastName ?? "")")
+                            .font(.headline)
+                        if let nationality = author.nationality {
+                            Text("Nacionalidad: \(nationality)").font(.subheadline)
+                        }
+                        if let year = author.birthYear {
+                            Text("Año de nacimiento: \(year)").font(.subheadline)
+                        }
                     }
                 }
                 .onAppear {

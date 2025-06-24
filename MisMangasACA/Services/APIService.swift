@@ -195,6 +195,23 @@ open class APIService {
         let decoder = JSONDecoder()
         return try decoder.decode([AuthorDTO].self, from: data)
     }
+    
+    // MARK: – 5. Mangas por autor
+    /// Obtiene todos los mangas asociados a un autor por su ID.
+    /// - Parameters:
+    ///   - authorId: El ID del autor (UUID en string)
+    ///   - page: Número de página (por defecto 1)
+    ///   - per: Cantidad de mangas por página (por defecto 20)
+    /// - Returns: PaginatedResponse<MangaDTO> con los mangas y metadata de paginación.
+    func fetchMangasByAuthor(_ authorId: String, page: Int = 1, per: Int = 20) async throws -> PaginatedResponse<MangaDTO> {
+        let path = "/list/mangaByAuthor/\(authorId)"
+        let queries = [
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "per", value: "\(per)")
+        ]
+        return try await request(path: path, queryItems: queries)
+    }
+    
     // func createUser(email: String, password: String) async throws -> Void { … }
     // func login(email: String, password: String) async throws -> AuthTokenDTO { … }
     // etc.
