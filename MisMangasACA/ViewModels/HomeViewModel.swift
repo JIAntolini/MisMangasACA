@@ -21,9 +21,17 @@ final class HomeViewModel: ObservableObject {
     @Published var currentPage = 1
     @Published var genres: [String] = []
     @Published var selectedGenre: String?
+    @Published var totalMangas: Int = 0
     private let perPage = 20
     
     private var canLoadMore: Bool { !isLastPage }
+    
+    private enum Context {
+        case top
+        case busqueda(query: String)
+        case genero(String)
+    }
+    private var context: Context = .top
     
     // MARK: – Init
     init(api: APIService = .shared) {
@@ -36,13 +44,20 @@ final class HomeViewModel: ObservableObject {
             await loadPage(1)
             return
         }
-        // Si el ítem actual es el último de la lista y hay más páginas...
-        if mangas.last?.id == item.id && !isLoadingPage {
-            await loadPage(currentPage + 1)
+        if mangas.last?.id == item.id && !isLoadingPage && !isLastPage {
+            switch context {
+            case .top:
+                await loadPage(currentPage + 1)
+            case .busqueda(let query):
+                await searchMangas(with: query, page: currentPage + 1)
+            case .genero(let genero):
+                await loadMangasByGenre(genero, page: currentPage + 1)
+            }
         }
     }
     
-func loadPage(_ page: Int, forceReload: Bool = false) async {
+    func loadPage(_ page: Int, forceReload: Bool = false) async {
+        context = .top
         guard (!isLoadingPage && !isLastPage) || forceReload else { return }
         isLoadingPage = true
         defer { isLoadingPage = false }
@@ -52,16 +67,16 @@ func loadPage(_ page: Int, forceReload: Bool = false) async {
                 page: page,
                 per: perPage
             )
-            // 1. Actualiza la lista
-            if page == 1 {
+            if page == 1 || forceReload {
                 mangas = response.data
-            } else {
+            } else if page == currentPage + 1 {
                 mangas.append(contentsOf: response.data)
+            } else {
+                mangas = response.data
             }
-
-            // 2. Actualiza el estado de paginación
             currentPage = response.metadata.page
             isLastPage  = response.data.isEmpty
+            self.totalMangas = response.metadata.total
         } catch let decodingError as DecodingError {
             // 🛑 Error de decodificación: probablemente shape inesperado del JSON
             print("❌ Decoding error:", decodingError)
@@ -74,20 +89,27 @@ func loadPage(_ page: Int, forceReload: Bool = false) async {
     }
     /// Busca mangas cuyo título contenga el texto dado, usando el endpoint de la API.
     /// Si la consulta está vacía, recarga el listado de best mangas.
-    func searchMangas(with query: String) async {
+    func searchMangas(with query: String, page: Int = 1) async {
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
             // Si la búsqueda está vacía, mostramos el top inicial
             await loadPage(1)
             return
         }
+        context = .busqueda(query: trimmed)
+        isLastPage = false
         isLoadingPage = true
         defer { isLoadingPage = false }
         do {
-            let response = try await api.searchMangasContains(trimmed, page: 1, per: perPage)
-            mangas = response.data
-            currentPage = 1
+            let response = try await api.searchMangasContains(trimmed, page: page, per: perPage)
+            if page == 1 {
+                mangas = response.data
+            } else {
+                mangas.append(contentsOf: response.data)
+            }
+            currentPage = page
             isLastPage = response.data.isEmpty
+            self.totalMangas = response.metadata.total
         } catch {
             print("Error al buscar mangas: \(error)")
             // Opcional: podrías exponer un mensaje de error a la UI aquí
@@ -109,6 +131,7 @@ extension HomeViewModel {
     /// Carga mangas de un género específico usando el endpoint paginado /list/mangaByGenre/{genre}.
     /// Ahora permite paginación infinita e integra el control de página y última página.
     func loadMangasByGenre(_ genre: String, page: Int = 1, forceReload: Bool = false) async {
+        context = .genero(genre)
         guard (!isLoadingPage && !isLastPage) || forceReload else { return }
         isLoadingPage = true
         defer { isLoadingPage = false }
@@ -125,6 +148,7 @@ extension HomeViewModel {
             // Si no hay más resultados, se marca como última página
             isLastPage = response.data.isEmpty
             selectedGenre = genre
+            self.totalMangas = response.metadata.total
         } catch {
             #if DEBUG
             print("Error al buscar mangas por género: \(error.localizedDescription)")

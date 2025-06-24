@@ -42,7 +42,8 @@ struct HomeView: View {
                         ForEach(vm.genres, id: \.self) { genre in
                             Button(genre, action: {
                                 vm.selectedGenre = genre
-                                Task { await vm.loadMangasByGenre(genre) }
+                                query = ""
+                                Task { await vm.loadMangasByGenre(genre, forceReload: true) }
                             })
                         }
                     } label: {
@@ -76,11 +77,19 @@ struct HomeView: View {
                         ProgressView()
                             .padding()
                     }
+
+                    if !vm.isLoadingPage && vm.isLastPage && !vm.mangas.isEmpty {
+                        Text("No hay más mangas para mostrar.")
+                            .foregroundColor(.secondary)
+                            .font(.callout)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.vertical, 16)
+                    }
                 }
                 .padding()
             }
             .background(.ultraThinMaterial) // fallback para iOS < 18; usa backgroundEffect en Xcode 16+
-            .navigationTitle("Top Mangas")
+            .navigationTitle(navigationTitle)
             .toolbar {
                 // Ejemplo de toolbar modular
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -96,15 +105,28 @@ struct HomeView: View {
         .onChange(of: query) { old, new in
             // Si se borra la búsqueda, recarga la página 1 para mostrar el top
             if new.isEmpty {
-                Task {
-                    await vm.loadPage(1)
+                if vm.selectedGenre != nil {
+                    Task { await vm.loadMangasByGenre(vm.selectedGenre!, forceReload: true) }
+                } else {
+                    Task { await vm.loadPage(1, forceReload: true) }
                 }
             }
         }
         // Carga inicial: primero los géneros para el filtro y luego la primera página de mangas
         .task {
             await vm.loadGenres()
-            await vm.loadNextPageIfNeeded(currentItem: nil)
+            await vm.loadPage(1, forceReload: true)
+        }
+    }
+    
+    // Dinámicamente ajusta el título según el contexto
+    private var navigationTitle: String {
+        if let genre = vm.selectedGenre {
+            return genre
+        } else if !query.isEmpty {
+            return "Resultados"
+        } else {
+            return "Top Mangas"
         }
     }
 }
