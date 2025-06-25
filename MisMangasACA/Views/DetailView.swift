@@ -47,12 +47,14 @@ struct DetailView: View {
                         .font(.largeTitle.bold())
                         .accessibilityAddTraits(.isHeader)
                     if let jp = manga.titleJapanese {
-                        Text(jp).italic()
+                        Text(jp)
+                            .font(.mangaBody)
+                            .italic()
                             .foregroundColor(.secondary)
                     }
                     if let en = manga.titleEnglish {
                         Text(en)
-                            .font(.subheadline)
+                            .font(.mangaBody)
                             .foregroundColor(.secondary)
                     }
                 }
