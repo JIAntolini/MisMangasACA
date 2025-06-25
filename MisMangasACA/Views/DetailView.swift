@@ -10,85 +10,137 @@ import SwiftUI
 struct DetailView: View {
     let manga: MangaDTO
     @State private var showAddSheet = false
+    @State private var showFullSynopsis = false // Estado para expandir/cortar sinopsis
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 8) {
 
-                // Portada del manga con fondo y esquinas redondeadas
-                if
-                    let raw = manga.mainPicture?.replacingOccurrences(of: #"\""#, with: ""),
-                    let url = URL(string: raw)
+                // Portada del manga con efecto "stretchy header" estilo Apple TV
+                if let url = manga.mainPicture
+                    .flatMap({ $0.replacingOccurrences(of: "\"", with: "").trimmingCharacters(in: .whitespacesAndNewlines) })
+                    .flatMap(URL.init)
                 {
-                    AsyncImage(url: url) { phase in
-                        switch phase {
-                        case .success(let img):
-                            img
-                                .resizable()
-                                .scaledToFill()
-                                .frame(maxWidth: .infinity)
-                                .clipped()
-                                .cornerRadius(16)
-                                .accessibilityLabel(Text("Portada de \(manga.title)"))
-                        default:
-                            Color.gray
-                                .frame(height: 300)
-                                .cornerRadius(16)
+                    GeometryReader { geo in
+                        let minY = geo.frame(in: .global).minY
+                        AsyncImage(url: url) { phase in
+                            switch phase {
+                            case .empty:
+                                Color.gray
+                            case .success(let image):
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: geo.size.width, height: minY > 0 ? 300 + minY : 300)
+                                    .clipped()
+                                    .accessibilityLabel(Text("Portada de \(manga.title)"))
+                                    .overlay(alignment: .top) {
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [
+                                                Color(.systemBackground),
+                                                Color(.systemBackground).opacity(0.7),
+                                                Color.clear
+                                            ]),
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
+                                        .frame(height: 120)
+                                        .ignoresSafeArea()
+                                    }
+                                    .overlay(alignment: .bottom) {
+                                        LinearGradient(
+                                            gradient: Gradient(colors: [
+                                                Color.clear,
+                                                Color(.systemBackground).opacity(0.7),
+                                                Color(.systemBackground)
+                                            ]),
+                                            startPoint: .top,
+                                            endPoint: .bottom
+                                        )
+                                        .frame(height: 120)
+                                    }
+                            case .failure:
+                                Color.red
+                            @unknown default:
+                                EmptyView()
+                            }
                         }
+                        .frame(height: 300)
                     }
                     .frame(height: 300)
-                    .background(.ultraThinMaterial)
-                    .padding(.bottom, 8)
                 }
 
-                // Títulos principales
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 4) {
                     Text(manga.title)
                         .font(.largeTitle.bold())
+                        .foregroundStyle(.primary)
                         .accessibilityAddTraits(.isHeader)
+                    
                     if let jp = manga.titleJapanese {
                         Text(jp)
-                            .font(.mangaBody)
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    if let en = manga.titleEnglish {
+                        Text(en)
+                            .font(.title3)
                             .italic()
                             .foregroundColor(.secondary)
                     }
-                    if let en = manga.titleEnglish {
-                        Text(en)
-                            .font(.mangaBody)
-                            .foregroundColor(.secondary)
-                    }
-                }
 
-                // Metadatos clave: score, estado y fechas
-                HStack(spacing: 16) {
-                    if let score = manga.score {
-                        Label("\(String(format: "%.1f", score))", systemImage: "star.fill")
-                            .foregroundColor(.yellow)
-                            .font(.headline)
-                    }
-                    if let status = manga.status {
-                        Text(status.capitalized)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                    }
-                    Spacer()
-                    if let start = manga.startDate {
-                        Text(start, style: .date)
-                    }
-                    if let end = manga.endDate {
-                        Text("– \(end, style: .date)")
+                    HStack(spacing: 16) {
+                        if let score = manga.score {
+                            Label(String(format: "%.1f", score), systemImage: "star.fill")
+                                .foregroundColor(.yellow)
+                                .font(.headline)
+                        }
+
+                        if let status = manga.status {
+                            Text(status.replacingOccurrences(of: "_", with: " "))
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+
+                        Spacer()
+
+                        if let start = manga.startDate {
+                            Text(start, style: .date)
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
+                        }
+
+                        if let end = manga.endDate {
+                            Text("– \(end, style: .date)")
+                                .font(.subheadline)
+                                .foregroundColor(.primary)
+                        }
                     }
                 }
-                .accessibilityElement(children: .combine)
-                .font(.subheadline)
+                .padding(.horizontal)
 
                 Divider()
 
                 // Sinopsis y contexto
                 if let s = manga.synopsis {
                     Section(header: Text("Sinopsis").font(.headline)) {
-                        Text(s)
-                            .font(.body)
+                        Group {
+                            if showFullSynopsis {
+                                Text(s)
+                            } else {
+                                Text(s)
+                                    .lineLimit(5)
+                            }
+                        }
+                        .font(.body)
+                        .animation(.easeInOut, value: showFullSynopsis)
+
+                        Button(showFullSynopsis ? "Leer menos" : "Leer más") {
+                            showFullSynopsis.toggle()
+                        }
+                        .font(.caption)
+                        .foregroundColor(.accentColor)
+                        .padding(.top, 4)
                     }
                 }
                 if let bg = manga.background {
@@ -169,4 +221,3 @@ struct DetailView: View {
         }
     }
 }
-

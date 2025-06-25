@@ -146,15 +146,20 @@ struct MangaRowView: View {
             AsyncImage(url: cleanedURL) { phase in
                 switch phase {
                 case .empty:
-                    Color.gray.frame(width: 60, height: 90)
+                    Color.gray
+                        .frame(width: 60, height: 90)
+                        .cornerRadius(8)
                 case .success(let img):
                     img
                         .resizable()
-                        .scaledToFill()
-                        .frame(width: 60, height: 90)
-                        .clipped()
+                        .scaledToFit()
+                        .frame(maxWidth: 80)
+                        .cornerRadius(8)
+                        .accessibilityLabel(Text("Portada de \(manga.title)"))
                 case .failure:
-                    Color.red.frame(width: 60, height: 90)
+                    Color.red
+                        .frame(width: 60, height: 90)
+                        .cornerRadius(8)
                 @unknown default:
                     EmptyView()
                 }
