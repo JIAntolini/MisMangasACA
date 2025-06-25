@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct AuthorsView: View {
-    @StateObject private var viewModel = AuthorsViewModel()
+    @EnvironmentObject var viewModel: AuthorsViewModel
 
     var body: some View {
         NavigationStack {
@@ -48,11 +48,6 @@ struct AuthorsView: View {
                 }
             }
             .navigationTitle("Autores")
-            .task {
-                if viewModel.displayedAuthors.isEmpty {
-                    await viewModel.loadAuthors()
-                }
-            }
             .overlay {
                 if viewModel.isLoading && viewModel.displayedAuthors.isEmpty {
                     VStack(spacing: 16) {

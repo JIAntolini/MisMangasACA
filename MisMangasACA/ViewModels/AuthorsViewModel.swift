@@ -32,7 +32,9 @@ final class AuthorsViewModel: ObservableObject {
         return Array(filtered.prefix(currentPage * pageSize))
     }
 
-    func loadAuthors() async {
+    func loadAuthors(forceReload: Bool = false) async {
+        // Si ya hay autores y no se pide recarga forzada, no vuelvas a pedirlos
+        if !forceReload && !authors.isEmpty { return }
         isLoading = true
         defer { isLoading = false }
         do {

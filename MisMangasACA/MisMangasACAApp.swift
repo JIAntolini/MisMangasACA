@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import Combine
 
 @main
 struct MisMangasACAApp: App {
@@ -35,9 +36,13 @@ struct MisMangasACAApp: App {
         }
     }()
 
+    @StateObject private var authorsVM = AuthorsViewModel()
+
     var body: some Scene {
         WindowGroup {
             MainTabView()
+                .environmentObject(authorsVM)
+                .task { await authorsVM.loadAuthors() }
         }
         .modelContainer(sharedModelContainer)
     }
