@@ -30,21 +30,52 @@ struct AuthorsView: View {
                 }
             }
             .padding([.horizontal, .top])
-            List(viewModel.displayedAuthors, id: \.id) { author in
-                NavigationLink(destination: AuthorMangasView(author: author)) {
-                    VStack(alignment: .leading) {
-                        Text("\(author.firstName) \(author.lastName ?? "")")
-                            .font(.headline)
-                        if let nationality = author.nationality {
-                            Text("Nacionalidad: \(nationality)").font(.subheadline)
-                        }
-                        if let year = author.birthYear {
-                            Text("Año de nacimiento: \(year)").font(.subheadline)
+            List {
+                ForEach(groupedAuthors, id: \.key) { section in
+                    Section(header: Text(section.key)) {
+                        ForEach(section.value) { author in
+                            NavigationLink(destination: AuthorMangasView(author: author)) {
+                                HStack(spacing: 12) {
+                                // Avatar circular con ícono dinámico según el rol
+                                ZStack {
+                                    Circle()
+                                        .fill(.blue.opacity(0.15))
+                                        .frame(width: 44, height: 44)
+
+                                    Image(systemName: {
+                                        if let role = author.role?.lowercased() {
+                                            if role.contains("story") && role.contains("art") {
+                                                return "person.2.fill"
+                                            } else if role.contains("art") {
+                                                return "pencil.circle.fill"
+                                            } else if role.contains("story") {
+                                                return "text.book.closed.fill"
+                                            }
+                                        }
+                                        return "person.fill"
+                                    }())
+                                    .foregroundColor(.blue)
+                                }
+
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("\(author.firstName) \(author.lastName ?? "")")
+                                            .font(.headline)
+                                        if let nationality = author.nationality {
+                                            Text("Nacionalidad: \(nationality)").font(.subheadline).foregroundColor(.secondary)
+                                        }
+                                        if let year = author.birthYear {
+                                            Text("Año de nacimiento: \(year)").font(.subheadline).foregroundColor(.secondary)
+                                        }
+                                    }
+                                }
+                                .padding(.vertical, 4)
+                                .transition(.opacity.combined(with: .move(edge: .bottom)))
+                            }
+                            .onAppear {
+                                viewModel.loadNextPageIfNeeded(currentItem: author)
+                            }
                         }
                     }
-                }
-                .onAppear {
-                    viewModel.loadNextPageIfNeeded(currentItem: author)
                 }
             }
             .navigationTitle("Autores")
@@ -121,5 +152,22 @@ struct Shimmer: ViewModifier {
 extension View {
     func shimmering() -> some View {
         self.modifier(Shimmer())
+    }
+}
+
+// MARK: - Agrupación de autores por inicial
+
+private extension AuthorsView {
+    // Agrupa autores por la inicial del nombre y devuelve un array ordenado por clave (inicial)
+    private var groupedAuthors: [(key: String, value: [AuthorDTO])] {
+        let authors = viewModel.displayedAuthors
+        let groups = Dictionary(grouping: authors) { author in
+            String(author.firstName.prefix(1)).uppercased()
+        }
+        return groups.sorted { $0.key < $1.key }
+    }
+
+    private var sectionTitles: [String] {
+        groupedAuthors.map(\.key)
     }
 }
