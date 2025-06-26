@@ -30,6 +30,19 @@ struct AuthorsView: View {
                 }
             }
             .padding([.horizontal, .top])
+            // Observa los cambios en el campo de búsqueda para disparar la búsqueda remota o local (iOS 17+)
+            .onChange(of: viewModel.searchText) { _, newValue in
+                Task {
+                    if newValue.count > 2 {
+                        // Búsqueda remota si hay más de 2 caracteres
+                        await viewModel.searchAuthorsRemotely(newValue)
+                    } else if newValue.isEmpty {
+                        // Si se borra el texto, recarga la lista general
+                        await viewModel.loadAuthors(forceReload: true)
+                    }
+                    // Si hay 1 o 2 caracteres, no se realiza ninguna acción (evita consultas innecesarias)
+                }
+            }
             List {
                 ForEach(groupedAuthors, id: \.key) { section in
                     Section(header: Text(section.key)) {

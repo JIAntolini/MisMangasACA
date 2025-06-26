@@ -215,4 +215,75 @@ open class APIService {
     // func createUser(email: String, password: String) async throws -> Void { … }
     // func login(email: String, password: String) async throws -> AuthTokenDTO { … }
     // etc.
+
+    // MARK: – Busca mangas cuyo título EMPIEZA con un prefijo
+    /// Devuelve mangas cuyo título empieza por el texto dado.
+    /// - Parameters:
+    ///   - prefix: Prefijo a buscar (ej: "dra" para "Dragon Ball")
+    ///   - page: Número de página
+    ///   - per: Elementos por página
+    func searchMangasBeginsWith(_ prefix: String, page: Int = 1, per: Int = 10) async throws -> PaginatedResponse<MangaDTO> {
+        let encoded = prefix.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? prefix
+        let path = "/search/mangasBeginsWith/\(encoded)"
+        let queries = [
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "per",  value: "\(per)")
+        ]
+        return try await request(path: path, queryItems: queries)
+    }
+
+    // MARK: – Busca autores cuyo nombre o apellido contenga el texto
+    /// Devuelve autores cuyo primer o apellido contiene el texto (case-insensitive).
+    /// - Parameter text: Texto a buscar en nombres o apellidos de autores
+    func searchAuthors(_ text: String) async throws -> [AuthorDTO] {
+        let encoded = text.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? text
+        let path = "/search/author/\(encoded)"
+        return try await request(path: path)
+    }
+
+    // MARK: – Busca manga por ID exacto
+    /// Devuelve el manga por ID exacto (para detalle, deep link, etc).
+    /// - Parameter id: ID único del manga
+    func fetchMangaById(_ id: Int) async throws -> MangaDTO {
+        let path = "/search/manga/\(id)"
+        return try await request(path: path)
+    }
+
+    // MARK: – Búsqueda avanzada: POST /search/manga con filtros CustomSearch
+    /// Realiza búsqueda avanzada de mangas según parámetros flexibles.
+    /// - Parameter search: Estructura CustomSearch con filtros combinados.
+    /// - Returns: Paginado de MangaDTO.
+    func customSearch(_ search: CustomSearch, page: Int = 1, per: Int = 10) async throws -> PaginatedResponse<MangaDTO> {
+        let path = "/search/manga"
+        var components = URLComponents(url: baseURL.appendingPathComponent(path), resolvingAgainstBaseURL: false)!
+        components.queryItems = [
+            URLQueryItem(name: "page", value: "\(page)"),
+            URLQueryItem(name: "per",  value: "\(per)")
+        ]
+        var req = URLRequest(url: components.url!)
+        req.httpMethod = "POST"
+        req.setValue(appToken, forHTTPHeaderField: "App-Token")
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        req.httpBody = try encoder.encode(search)
+        let (data, response) = try await session.data(for: req)
+        guard let httpResp = response as? HTTPURLResponse, 200..<300 ~= httpResp.statusCode else {
+            throw URLError(.badServerResponse)
+        }
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return try decoder.decode(PaginatedResponse<MangaDTO>.self, from: data)
+    }
+}
+
+/// Estructura para búsquedas avanzadas (CustomSearch) en el endpoint POST /search/manga
+struct CustomSearch: Codable {
+    var searchTitle: String?
+    var searchAuthorFirstName: String?
+    var searchAuthorLastName: String?
+    var searchGenres: [String]?
+    var searchThemes: [String]?
+    var searchDemographics: [String]?
+    var searchContains: Bool
 }

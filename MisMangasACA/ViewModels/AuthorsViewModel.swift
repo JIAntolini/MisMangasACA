@@ -51,6 +51,26 @@ final class AuthorsViewModel: ObservableObject {
         }
     }
     
+    // MARK: – Busca autores por texto usando la API
+    /// Busca autores cuyo nombre o apellido contenga el texto, usando el endpoint /search/author/{text}
+    func searchAuthorsRemotely(_ text: String) async {
+        guard !text.isEmpty else { return }
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            authors = try await APIService.shared.searchAuthors(text)
+            // Ordena igual que en el fetch general
+            authors.sort {
+                let lhs = ($0.lastName?.lowercased() ?? "") + $0.firstName.lowercased()
+                let rhs = ($1.lastName?.lowercased() ?? "") + $1.firstName.lowercased()
+                return lhs < rhs
+            }
+            currentPage = 1
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+    
     func loadNextPage() {
         currentPage += 1
     }

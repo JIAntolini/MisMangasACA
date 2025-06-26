@@ -116,6 +116,75 @@ final class HomeViewModel: ObservableObject {
             // Opcional: podrías exponer un mensaje de error a la UI aquí
         }
     }
+    
+    // MARK: – Busca mangas cuyo título empieza por un prefijo (autocompletado, opcional)
+    /// Sugerencias de mangas cuyo título empieza por el texto (ideal para UX de autocompletar)
+    func suggestMangas(prefix: String, page: Int = 1) async {
+        guard !prefix.isEmpty else { return }
+        isLoadingPage = true
+        defer { isLoadingPage = false }
+        do {
+            let response = try await api.searchMangasBeginsWith(prefix, page: page, per: perPage)
+            if page == 1 {
+                mangas = response.data
+            } else {
+                mangas.append(contentsOf: response.data)
+            }
+            currentPage = page
+            isLastPage = response.data.isEmpty
+            self.totalMangas = response.metadata.total
+        } catch {
+            print("Error en suggestMangas: \(error)")
+        }
+    }
+    
+    // MARK: – Busca manga por ID exacto (para detalle directo)
+    /// Trae el manga por su ID exacto
+    func fetchMangaById(_ id: Int) async -> MangaDTO? {
+        isLoadingPage = true
+        defer { isLoadingPage = false }
+        do {
+            return try await api.fetchMangaById(id)
+        } catch {
+            print("Error al buscar manga por ID: \(error)")
+            return nil
+        }
+    }
+    
+    // MARK: – Búsqueda avanzada multipropósito (CustomSearch)
+    /// Búsqueda combinada: por título, autor, géneros, etc.
+    /// - Parameters:
+    ///   - search: filtros combinados (struct CustomSearch)
+    ///   - page: página a buscar
+    func advancedSearch(with search: CustomSearch, page: Int = 1) async {
+        context = .busqueda(query: search.searchTitle ?? "")
+        isLoadingPage = true
+        defer { isLoadingPage = false }
+        do {
+            let response = try await api.customSearch(search, page: page, per: perPage)
+            if page == 1 {
+                mangas = response.data
+            } else {
+                mangas.append(contentsOf: response.data)
+            }
+            currentPage = page
+            isLastPage = response.data.isEmpty
+            self.totalMangas = response.metadata.total
+        } catch {
+            print("Error en advancedSearch: \(error)")
+        }
+    }
+    
+    // MARK: – Buscar autores por texto (para usar en búsqueda avanzada o autocompletar)
+    /// Devuelve autores cuyo nombre o apellido contenga el texto
+    func searchAuthors(with text: String) async -> [AuthorDTO] {
+        do {
+            return try await api.searchAuthors(text)
+        } catch {
+            print("Error en searchAuthors: \(error)")
+            return []
+        }
+    }
 }
 
 // MARK: - Filtro por género (usando String)
