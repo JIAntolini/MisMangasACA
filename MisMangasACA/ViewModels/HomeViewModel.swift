@@ -82,8 +82,9 @@ final class HomeViewModel: ObservableObject {
             print("❌ Decoding error:", decodingError)
             // Evita un loop infinito intentando la misma página
             isLastPage = true
+        } catch let urlError as URLError where urlError.code == .cancelled {
+            // Ignorar cancelaciones (como al navegar a otra vista)
         } catch {
-            // Otros errores: red, URL, etc.
             print("Error loading page \(page): \(error)")
         }
     }
