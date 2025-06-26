@@ -162,9 +162,20 @@ private extension AuthorsView {
     private var groupedAuthors: [(key: String, value: [AuthorDTO])] {
         let authors = viewModel.displayedAuthors
         let groups = Dictionary(grouping: authors) { author in
-            String(author.firstName.prefix(1)).uppercased()
+            let firstChar = String(author.firstName.prefix(1)).uppercased()
+            let isAlpha = firstChar.range(of: "^[A-Z]$", options: .regularExpression) != nil
+            return isAlpha ? firstChar : "#"
         }
-        return groups.sorted { $0.key < $1.key }
+
+        let sorted = groups.sorted { lhs, rhs in
+            switch (lhs.key, rhs.key) {
+            case ("#", _): return false   // "#" siempre al final
+            case (_, "#"): return true
+            default: return lhs.key < rhs.key
+            }
+        }
+
+        return sorted
     }
 
     private var sectionTitles: [String] {
