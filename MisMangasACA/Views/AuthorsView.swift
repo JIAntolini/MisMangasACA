@@ -121,6 +121,9 @@ struct AuthorsView: View {
                     viewModel.loadNextPage()
                 }
             }
+            .refreshable {
+                await viewModel.loadAuthors(forceReload: true)
+            }
         }
     }
 }

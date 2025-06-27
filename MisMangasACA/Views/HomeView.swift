@@ -88,6 +88,15 @@ struct HomeView: View {
                 }
                 .padding()
             }
+            .refreshable {
+                if vm.selectedGenre != nil {
+                    await vm.loadMangasByGenre(vm.selectedGenre!, forceReload: true)
+                } else if !query.isEmpty {
+                    await vm.searchMangas(with: query)
+                } else {
+                    await vm.loadPage(1, forceReload: true)
+                }
+            }
             .background(.ultraThinMaterial) // fallback para iOS < 18; usa backgroundEffect en Xcode 16+
             .navigationTitle(navigationTitle)
             .toolbar {
