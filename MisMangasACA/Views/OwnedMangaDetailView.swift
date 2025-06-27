@@ -8,56 +8,212 @@
 
 import SwiftUI
 import SwiftData      // Necesario para `@Bindable`
+import Charts
 
 struct OwnedMangaDetailView: View {
 
     /// Entrada persistente de la colección que estamos editando.
     @Bindable var entry: UserCollectionEntry
 
+    /// Máximo de volúmenes a mostrar en chips / slider. Solo crece.
+    @State private var dynamicMax: Int
+
+    /// Portada descargada si no teníamos URL guardada
+    @State private var fetchedCoverURL: String?
+
+
+    init(entry: UserCollectionEntry) {
+        self._entry = Bindable(wrappedValue: entry)
+        _dynamicMax = State(initialValue: max(entry.volumesOwned.max() ?? (entry.readingVolume ?? 1), 1))
+    }
+
+    // MARK: - Vista
     var body: some View {
-        Form {
-            // Portada y título
-            Section {
-                if let urlString = entry.coverURL,
-                   let url = URL(string: urlString) {
-                    AsyncImage(url: url) { image in
-                        image.resizable()
-                            .scaledToFit()
-                            .cornerRadius(12)
-                            .frame(maxWidth: .infinity)
-                    } placeholder: {
-                        Color.gray.frame(height: 220)
-                            .cornerRadius(12)
+        ScrollView {
+            VStack(spacing: 16) {
+                // Portada
+                cover
+                    .frame(maxWidth: .infinity)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+
+                // Card principal
+                VStack(spacing: 16) {
+                    Divider()
+
+                    // Toggle colección
+                    Toggle("Colección completa", isOn: $entry.completeCollection)
+                        .toggleStyle(.switch)
+
+                    // Progreso
+                    VStack(spacing: 12) {
+                        Text("Progreso de lectura")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+
+                        Slider(
+                            value: Binding(
+                                get: { Double(entry.readingVolume ?? 0) },
+                                set: { entry.readingVolume = Int($0.rounded()) }
+                            ),
+                            in: 0...Double(purchasedMax),
+                            step: 1
+                        )
+                        .frame(maxWidth: 240)
+                        .padding(.top, 4)
+
+                        // Donut de progreso usando Swift Charts
+                        Chart {
+                            SectorMark(
+                                angle: .value("Leído", Double(entry.readingVolume ?? 0)),
+                                innerRadius: .ratio(0.60),
+                                angularInset: 2
+                            )
+                            .foregroundStyle(Color.accentColor)
+
+                            SectorMark(
+                                angle: .value("Restante",
+                                              Double(max(purchasedMax - (entry.readingVolume ?? 0), 0))),
+                                innerRadius: .ratio(0.60),
+                                angularInset: 2
+                            )
+                            .foregroundStyle(Color.gray.opacity(0.25))
+                        }
+                        .chartLegend(.hidden)
+                        .frame(width: 160, height: 160)
+                        .overlay(
+                            Text("\(entry.readingVolume ?? 0) / \(purchasedMax)")
+                                .font(.headline)
+                        )
+                        .accessibilityElement()
+                        .accessibilityLabel("Progreso de lectura")
+                        .accessibilityValue("\(entry.readingVolume ?? 0) de \(purchasedMax) tomos")
+                    }
+
+                    // Chips de tomos
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Tomos comprados")
+                            .font(.headline)
+
+                        // Distribución adaptable de chips
+                        let columns = [GridItem(.adaptive(minimum: 40), spacing: 8)]
+                        LazyVGrid(columns: columns, alignment: .leading, spacing: 8) {
+                            ForEach(1...dynamicMax, id: \.self) { tomo in
+                                Text("\(tomo)")
+                                    .font(.caption)
+                                    .padding(.vertical, 6)
+                                    .padding(.horizontal, 12)
+                                    .background(
+                                        entry.volumesOwned.contains(tomo)
+                                        ? Color.accentColor.opacity(0.25)
+                                        : Color.gray.opacity(0.25)
+                                    )
+                                    .foregroundColor(.primary)
+                                    .clipShape(Capsule())
+                                    .onTapGesture {
+                                        toggleVolume(tomo)
+                                    }
+                            }
+                        }
                     }
                 }
-
-                Text(entry.title)
-                    .font(.title.bold())
+                .padding()
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 20))
+                .shadow(radius: 4, y: 2)
             }
-
-            // Datos de colección
-            Section(header: Text("Colección")) {
-                Toggle("Colección completa", isOn: $entry.completeCollection)
-
-                // Leyendo tomo
-                Stepper(value: Binding(
-                    get: { entry.readingVolume ?? 0 },
-                    set: { entry.readingVolume = $0 }
-                ), in: 0...999) {
-                    Text("Leyendo tomo: \(entry.readingVolume ?? 0)")
-                }
-
-                // Tomos poseídos (solo lectura por ahora)
-                if !entry.volumesOwned.isEmpty {
-                    Text("Tomos comprados: \(entry.volumesOwned.sorted().map(String.init).joined(separator: ", "))")
-                        .font(.subheadline)
-                } else {
-                    Text("Aún no tienes tomos cargados.")
-                        .foregroundColor(.secondary)
-                }
-            }
+            .padding(.horizontal, 16)
         }
         .navigationTitle(entry.title)
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            await loadCoverIfNeeded()
+        }
+    }
+
+    // Portada grande o placeholder
+    @ViewBuilder
+    private var cover: some View {
+        let urlString = entry.coverURL ?? fetchedCoverURL
+        if let urlString {
+            let clean = urlString.trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+            if let url = URL(string: clean) {
+                AsyncImage(url: url) { image in
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } placeholder: {
+                    Color.gray.opacity(0.2)
+                }
+                .frame(height: 220)
+                .clipped()
+            } else {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(.secondary.opacity(0.15))
+                    Image(systemName: "book.closed")
+                        .font(.system(size: 60))
+                        .foregroundColor(.secondary)
+                }
+                .frame(height: 220)
+            }
+        } else {
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(.secondary.opacity(0.15))
+                Image(systemName: "book.closed")
+                    .font(.system(size: 60))
+                    .foregroundColor(.secondary)
+            }
+            .frame(height: 220)
+        }
+    }
+
+    /// Mayor tomo realmente comprado
+    private var purchasedMax: Int {
+        entry.volumesOwned.max() ?? 1
+    }
+
+    // MARK: - Carga de portada
+    @MainActor
+    private func loadCoverIfNeeded() async {
+        guard entry.coverURL == nil,
+              fetchedCoverURL == nil else { return }
+
+        let base = "https://mymanga-acacademy-5607149ebe3d.herokuapp.com/manga/"
+        guard let url = URL(string: base + String(entry.mangaID)) else { return }
+
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               var picture = json["mainPicture"] as? String {
+                picture = picture.trimmingCharacters(in: CharacterSet(charactersIn: "\""))
+                fetchedCoverURL = picture
+            }
+        } catch {
+            print("❌ Error fetching cover:", error)
+        }
+    }
+
+    // Alterna un tomo en `volumesOwned`
+    private func toggleVolume(_ tomo: Int) {
+        if let index = entry.volumesOwned.firstIndex(of: tomo) {
+            entry.volumesOwned.remove(at: index)
+        } else {
+            entry.volumesOwned.append(tomo)
+        }
+        entry.volumesOwned.sort()        // mantenemos orden
+
+        // Asegura que la lectura no apunte a un tomo que ya no poseemos
+        if let current = entry.readingVolume, current > purchasedMax {
+            entry.readingVolume = purchasedMax
+        }
+
+        // Ajusta `dynamicMax` solo si necesitamos agrandar; nunca lo reducimos
+        let candidateMax = max(entry.volumesOwned.max() ?? 0,
+                               entry.readingVolume ?? 0,
+                               1)
+        if candidateMax > dynamicMax {
+            dynamicMax = candidateMax
+        }
     }
 }

@@ -28,8 +28,23 @@ final class UserCollectionEntry {
     
     // MARK: - Datos de la colección
     
-    /// Array con los números de tomo que posee el usuario.
-    var volumesOwned: [Int]
+    /// Blob persistente que guarda el array encodificado como JSON.
+    @Attribute(.externalStorage) private var volumesOwnedBlob: Data?
+
+    /// Acceso de conveniencia (no persistente) que codifica/decodifica automáticamente
+    /// el array de tomos.  Usa JSON para simplicidad.
+    var volumesOwned: [Int] {
+        get {
+            guard
+                let data = volumesOwnedBlob,
+                let array = try? JSONDecoder().decode([Int].self, from: data)
+            else { return [] }
+            return array
+        }
+        set {
+            volumesOwnedBlob = try? JSONEncoder().encode(newValue)
+        }
+    }
     
     /// Tomo por el que va leyendo (opcional).
     var readingVolume: Int?
@@ -57,7 +72,8 @@ final class UserCollectionEntry {
         self.mangaID = mangaID
         self.title = title
         self.coverURL = coverURL
-        self.volumesOwned = volumesOwned
+        // Codificamos el array directamente para evitar usar `self` antes de tiempo
+        self.volumesOwnedBlob = try? JSONEncoder().encode(volumesOwned)
         self.readingVolume = readingVolume
         self.completeCollection = completeCollection
         self.updatedAt = updatedAt
