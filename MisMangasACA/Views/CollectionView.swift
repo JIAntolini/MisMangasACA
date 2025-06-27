@@ -22,14 +22,26 @@ struct CollectionView: View {
                     ForEach(entries) { entry in
                         NavigationLink(destination: OwnedMangaDetailView(entry: entry)) {
                             HStack(alignment: .top, spacing: 12) {
-                                AsyncImage(url: URL(string: entry.coverURL ?? "")) { image in
-                                    image.resizable()
-                                        .scaledToFill()
-                                } placeholder: {
-                                    Color.gray
+                                if let urlString = entry.coverURL,
+                                   let sanitized = Optional(urlString.trimmingCharacters(in: CharacterSet(charactersIn: "\""))),
+                                   let url = URL(string: sanitized) {
+                                    AsyncImage(url: url) { phase in
+                                        switch phase {
+                                        case .success(let image):
+                                            image.resizable()
+                                                 .scaledToFill()
+                                        default:
+                                            Color.gray.opacity(0.3)
+                                        }
+                                    }
+                                    .frame(width: 60, height: 90)
+                                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                                } else {
+                                    // Placeholder cuando no hay portada
+                                    Color.gray.opacity(0.3)
+                                        .frame(width: 60, height: 90)
+                                        .clipShape(RoundedRectangle(cornerRadius: 6))
                                 }
-                                .frame(width: 60, height: 90)
-                                .clipped()
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(entry.title)
                                         .font(.headline)

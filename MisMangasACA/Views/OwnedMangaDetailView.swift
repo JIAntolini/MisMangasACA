@@ -49,7 +49,7 @@ struct OwnedMangaDetailView: View {
 
                 // Tomos poseídos (solo lectura por ahora)
                 if !entry.volumesOwned.isEmpty {
-                    Text("Tomos comprados: \(entry.volumesOwned.map(String.init).sorted().joined(separator: ", "))")
+                    Text("Tomos comprados: \(entry.volumesOwned.sorted().map(String.init).joined(separator: ", "))")
                         .font(.subheadline)
                 } else {
                     Text("Aún no tienes tomos cargados.")
