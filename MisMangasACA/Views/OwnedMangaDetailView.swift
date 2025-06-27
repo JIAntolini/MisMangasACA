@@ -21,6 +21,9 @@ struct OwnedMangaDetailView: View {
     /// Portada descargada si no teníamos URL guardada
     @State private var fetchedCoverURL: String?
 
+    /// Tamaño de clase horizontal para adaptar layout (iPad vs iPhone)
+    @Environment(\.horizontalSizeClass) private var hSize
+
 
     init(entry: UserCollectionEntry) {
         self._entry = Bindable(wrappedValue: entry)
@@ -30,98 +33,101 @@ struct OwnedMangaDetailView: View {
     // MARK: - Vista
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
-                // Portada
-                cover
-                    .frame(maxWidth: .infinity)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-
-                // Card principal
+            HStack {
                 VStack(spacing: 16) {
-                    Divider()
+                    // Portada
+                    cover
+                        .frame(maxWidth: .infinity)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                    // Toggle colección
-                    Toggle("Colección completa", isOn: $entry.completeCollection)
-                        .toggleStyle(.switch)
+                    // Card principal
+                    VStack(spacing: 16) {
+                        Divider()
 
-                    // Progreso
-                    VStack(spacing: 12) {
-                        Text("Progreso de lectura")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        // Toggle colección
+                        Toggle("Colección completa", isOn: $entry.completeCollection)
+                            .toggleStyle(.switch)
 
-                        Slider(
-                            value: Binding(
-                                get: { Double(entry.readingVolume ?? 0) },
-                                set: { entry.readingVolume = Int($0.rounded()) }
-                            ),
-                            in: 0...Double(purchasedMax),
-                            step: 1
-                        )
-                        .frame(maxWidth: 240)
-                        .padding(.top, 4)
-
-                        // Donut de progreso usando Swift Charts
-                        Chart {
-                            SectorMark(
-                                angle: .value("Leído", Double(entry.readingVolume ?? 0)),
-                                innerRadius: .ratio(0.60),
-                                angularInset: 2
-                            )
-                            .foregroundStyle(Color.accentColor)
-
-                            SectorMark(
-                                angle: .value("Restante",
-                                              Double(max(purchasedMax - (entry.readingVolume ?? 0), 0))),
-                                innerRadius: .ratio(0.60),
-                                angularInset: 2
-                            )
-                            .foregroundStyle(Color.gray.opacity(0.25))
-                        }
-                        .chartLegend(.hidden)
-                        .frame(width: 160, height: 160)
-                        .overlay(
-                            Text("\(entry.readingVolume ?? 0) / \(purchasedMax)")
+                        // Progreso
+                        VStack(spacing: 12) {
+                            Text("Progreso de lectura")
                                 .font(.headline)
-                        )
-                        .accessibilityElement()
-                        .accessibilityLabel("Progreso de lectura")
-                        .accessibilityValue("\(entry.readingVolume ?? 0) de \(purchasedMax) tomos")
-                    }
+                                .frame(maxWidth: .infinity, alignment: .leading)
 
-                    // Chips de tomos
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Tomos comprados")
-                            .font(.headline)
+                            Slider(
+                                value: Binding(
+                                    get: { Double(entry.readingVolume ?? 0) },
+                                    set: { entry.readingVolume = Int($0.rounded()) }
+                                ),
+                                in: 0...Double(purchasedMax),
+                                step: 1
+                            )
+                            .frame(maxWidth: 240)
+                            .padding(.top, 4)
 
-                        // Distribución adaptable de chips
-                        let columns = [GridItem(.adaptive(minimum: 40), spacing: 8)]
-                        LazyVGrid(columns: columns, alignment: .leading, spacing: 8) {
-                            ForEach(1...dynamicMax, id: \.self) { tomo in
-                                Text("\(tomo)")
-                                    .font(.caption)
-                                    .padding(.vertical, 6)
-                                    .padding(.horizontal, 12)
-                                    .background(
-                                        entry.volumesOwned.contains(tomo)
-                                        ? Color.accentColor.opacity(0.25)
-                                        : Color.gray.opacity(0.25)
-                                    )
-                                    .foregroundColor(.primary)
-                                    .clipShape(Capsule())
-                                    .onTapGesture {
-                                        toggleVolume(tomo)
-                                    }
+                            // Donut de progreso usando Swift Charts
+                            Chart {
+                                SectorMark(
+                                    angle: .value("Leído", Double(entry.readingVolume ?? 0)),
+                                    innerRadius: .ratio(0.60),
+                                    angularInset: 2
+                                )
+                                .foregroundStyle(Color.accentColor)
+
+                                SectorMark(
+                                    angle: .value("Restante",
+                                                  Double(max(purchasedMax - (entry.readingVolume ?? 0), 0))),
+                                    innerRadius: .ratio(0.60),
+                                    angularInset: 2
+                                )
+                                .foregroundStyle(Color.gray.opacity(0.25))
+                            }
+                            .chartLegend(.hidden)
+                            .frame(width: 160, height: 160)
+                            .overlay(
+                                Text("\(entry.readingVolume ?? 0) / \(purchasedMax)")
+                                    .font(.headline)
+                            )
+                            .accessibilityElement()
+                            .accessibilityLabel("Progreso de lectura")
+                            .accessibilityValue("\(entry.readingVolume ?? 0) de \(purchasedMax) tomos")
+                        }
+
+                        // Chips de tomos
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Tomos comprados")
+                                .font(.headline)
+
+                            let columns = [GridItem(.adaptive(minimum: 40), spacing: 8)]
+                            LazyVGrid(columns: columns, alignment: .leading, spacing: 8) {
+                                ForEach(1...dynamicMax, id: \.self) { tomo in
+                                    Text("\(tomo)")
+                                        .font(.caption)
+                                        .padding(.vertical, 6)
+                                        .padding(.horizontal, 12)
+                                        .background(
+                                            entry.volumesOwned.contains(tomo)
+                                            ? Color.accentColor.opacity(0.25)
+                                            : Color.gray.opacity(0.25)
+                                        )
+                                        .foregroundColor(.primary)
+                                        .clipShape(Capsule())
+                                        .onTapGesture {
+                                            toggleVolume(tomo)
+                                        }
+                                }
                             }
                         }
                     }
+                    .padding()
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                    .shadow(radius: 4, y: 2)
                 }
-                .padding()
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .shadow(radius: 4, y: 2)
+                .frame(maxWidth: hSize == .regular ? 600 : .infinity)
             }
-            .padding(.horizontal, 16)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, hSize == .regular ? 32 : 16)
         }
         .navigationTitle(entry.title)
         .navigationBarTitleDisplayMode(.inline)
@@ -144,8 +150,8 @@ struct OwnedMangaDetailView: View {
                 } placeholder: {
                     Color.gray.opacity(0.2)
                 }
-                .frame(height: 220)
                 .clipped()
+                .aspectRatio(16/9, contentMode: .fit)
             } else {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
@@ -154,7 +160,7 @@ struct OwnedMangaDetailView: View {
                         .font(.system(size: 60))
                         .foregroundColor(.secondary)
                 }
-                .frame(height: 220)
+                .aspectRatio(16/9, contentMode: .fit)
             }
         } else {
             ZStack {
@@ -164,7 +170,7 @@ struct OwnedMangaDetailView: View {
                     .font(.system(size: 60))
                     .foregroundColor(.secondary)
             }
-            .frame(height: 220)
+            .aspectRatio(16/9, contentMode: .fit)
         }
     }
 

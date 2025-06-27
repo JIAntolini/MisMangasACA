@@ -8,8 +8,16 @@
 import SwiftUI
 
 struct HomeView: View {
+    /// Manga seleccionado (para NavigationSplitView en iPad)
+    @Binding var selectedManga: MangaDTO?
+    
     @StateObject private var vm = HomeViewModel()
     @State private var query = "" // Estado para la barra de búsqueda
+
+    // Inicializador por defecto para iPhone / TabView.
+    init(selectedManga: Binding<MangaDTO?> = .constant(nil)) {
+        self._selectedManga = selectedManga
+    }
     
     var body: some View {
         NavigationStack {
@@ -66,6 +74,9 @@ struct HomeView: View {
                         NavigationLink(destination: DetailView(manga: manga)) {
                             MangaRowView(manga: manga)
                         }
+                        .simultaneousGesture(TapGesture().onEnded {
+                            selectedManga = manga             // notifica al SplitView
+                        })
                         .onAppear {
                             Task {
                                 await vm.loadNextPageIfNeeded(currentItem: manga)

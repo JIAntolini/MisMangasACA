@@ -40,7 +40,7 @@ struct MisMangasACAApp: App {
 
     var body: some Scene {
         WindowGroup {
-            SplashView()
+            RootView()
                 .environmentObject(authorsVM)
                 .task { await authorsVM.loadAuthors() }
         }
