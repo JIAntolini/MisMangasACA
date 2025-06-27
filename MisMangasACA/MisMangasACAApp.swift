@@ -18,6 +18,7 @@ struct MisMangasACAApp: App {
     private var sharedModelContainer: ModelContainer = {
         // ⛑️ Mantén esta lista sincronizada con tus @Model existentes
         let schema = Schema([
+            UserCollectionEntry.self,
             MangaEntity.self,
             GenreEntity.self,
             ThemeEntity.self,
@@ -25,8 +26,7 @@ struct MisMangasACAApp: App {
             AuthorEntity.self
         ])
 
-        let configuration = ModelConfiguration(schema: schema,
-                                               isStoredInMemoryOnly: true)
+        let configuration = ModelConfiguration(schema: schema) // persistido en disco
 
         do {
             return try ModelContainer(for: schema,

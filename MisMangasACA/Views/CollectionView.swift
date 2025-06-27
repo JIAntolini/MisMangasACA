@@ -10,18 +10,19 @@ import SwiftUI
 import SwiftData
 
 struct CollectionView: View {
-    @Query(sort: \MangaEntity.title) var mangas: [MangaEntity]
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \UserCollectionEntry.title) var entries: [UserCollectionEntry]
 
     var body: some View {
         NavigationStack {
             List {
-                if mangas.isEmpty {
+                if entries.isEmpty {
                     ContentUnavailableView("Aún no tienes mangas en tu colección", systemImage: "books.vertical")
                 } else {
-                    ForEach(mangas) { manga in
-                        NavigationLink(destination: OwnedMangaDetailView(manga: manga)) {
+                    ForEach(entries) { entry in
+                        NavigationLink(destination: OwnedMangaDetailView(entry: entry)) {
                             HStack(alignment: .top, spacing: 12) {
-                                AsyncImage(url: manga.coverURL) { image in
+                                AsyncImage(url: URL(string: entry.coverURL ?? "")) { image in
                                     image.resizable()
                                         .scaledToFill()
                                 } placeholder: {
@@ -30,13 +31,9 @@ struct CollectionView: View {
                                 .frame(width: 60, height: 90)
                                 .clipped()
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(manga.title)
+                                    Text(entry.title)
                                         .font(.headline)
-                                    if let score = manga.score {
-                                        Text("⭐️ \(String(format: "%.1f", score))")
-                                            .font(.subheadline)
-                                    }
-                                    if manga.completeCollection {
+                                    if entry.completeCollection {
                                         Text("Colección completa")
                                             .font(.footnote)
                                             .foregroundColor(.green)
@@ -59,8 +56,9 @@ struct CollectionView: View {
     // Elimina mangas seleccionados de la colección
     func delete(at offsets: IndexSet) {
         for index in offsets {
-            let manga = mangas[index]
-            manga.modelContext?.delete(manga)
+            let entry = entries[index]
+            modelContext.delete(entry)
         }
+        try? modelContext.save()
     }
 }

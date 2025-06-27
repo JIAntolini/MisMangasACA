@@ -33,32 +33,42 @@ struct AddToCollectionView: View {
                 }
             }
 
-            // Botón para guardar el manga en la colección, evitando duplicados
-//            Button("Guardar en mi colección") {
-//                // Buscamos si ya existe el manga en la colección usando su ID único
-//                let descriptor = FetchDescriptor(
-//                    predicate: #Predicate<MangaEntity> { $0.id == manga.id }
-//                )
-//                if let existing = try? modelContext.fetch(descriptor).first {
-//                    // Si ya existe, solo actualizamos los datos relevantes
-//                    existing.completeCollection = isComplete
-//                    existing.volumesOwned = ownedVolumes
-//                    existing.readingVolume = readingVolume
-//                } else {
-//                    // Si no existe, creamos una nueva entrada en la colección
-//                    let entity = MangaEntity(from: manga, context: modelContext)
-//                    entity.completeCollection = isComplete
-//                    entity.volumesOwned = ownedVolumes
-//                    entity.readingVolume = readingVolume
-//                    modelContext.insert(entity)
-//                }
-//                // Guardamos los cambios y cerramos el modal
-//                try? modelContext.save()
-//                dismiss()
-//            }
+            // Botón para guardar la información en SwiftData,
+            // evitando duplicados mediante un #Predicate.
+            Button("Guardar en mi colección") {
+                do {
+                    // 1️⃣ Verificamos si el manga ya está en la colección local
+                    let mangaID = manga.id
+                    let descriptor = FetchDescriptor(
+                        predicate: #Predicate<UserCollectionEntry> { $0.mangaID == mangaID }
+                    )
+                    if let existing = try modelContext.fetch(descriptor).first {
+                        // Ya existe: solo actualizamos los campos editables
+                        existing.completeCollection = isComplete
+                        existing.volumesOwned     = ownedVolumes
+                        existing.readingVolume    = readingVolume
+                        existing.updatedAt        = .now
+                    } else {
+                        // No existe: creamos una nueva entrada
+                        let entry = UserCollectionEntry(
+                            mangaID: manga.id,
+                            title: manga.title,
+                            coverURL: manga.mainPicture,
+                            volumesOwned: ownedVolumes,
+                            readingVolume: readingVolume,
+                            completeCollection: isComplete
+                        )
+                        modelContext.insert(entry)
+                    }
+                    try modelContext.save()   // Persistimos los cambios
+                    dismiss()                 // Cerramos el modal
+                } catch {
+                    // En producción podríamos mostrar un alert; por ahora, log al debugger.
+                    print("❌ Error guardando en SwiftData:", error)
+                }
+            }
             .buttonStyle(.borderedProminent)
         }
         .navigationTitle("Agregar a colección")
     }
 }
-
