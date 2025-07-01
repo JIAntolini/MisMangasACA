@@ -7,6 +7,43 @@
 
 import SwiftUI
 
+/// # DetailView
+///
+/// Pantalla de detalle de un **manga**.
+/// Muestra la portada con efecto *stretchy header*, metadatos, sinopsis expandible,
+/// autores, géneros y enlace externo.
+///
+/// ## Overview
+/// - Utiliza `ScrollView` con cabecera elástica similar a Apple TV.
+/// - Sinopsis colapsable con botón *Leer más / Leer menos*.
+/// - Botón “Añadir a mi colección” abre ``AddToCollectionView`` como sheet.
+/// - Accesibilidad: `accessibilityLabel` en portada; jerarquía de encabezados.
+///
+/// ## Sections
+/// | Sección | Descripción |
+/// |---------|-------------|
+/// | Portada | Imagen remota con parallax |
+/// | Metadatos | Título, puntaje, estado, fechas |
+/// | Sinopsis / Contexto | Texto expandible |
+/// | Autores | Lista con rol |
+/// | Géneros / Temas / Demografía | Tags concatenados |
+/// | Enlace externo | Link a MyAnimeList |
+///
+/// ## Usage
+/// ```swift
+/// NavigationLink(destination: DetailView(manga: manga)) {
+///     MangaRowView(manga: manga)
+/// }
+/// ```
+///
+/// ## See Also
+/// - ``MangaDTO``
+/// - ``AddToCollectionView``
+/// - ``HomeView``
+///
+/// ## Author
+/// Creado por Juan Ignacio Antolini — 2025
+///
 struct DetailView: View {
     let manga: MangaDTO
     @State private var showAddSheet = false

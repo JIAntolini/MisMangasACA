@@ -14,6 +14,44 @@ import Foundation
 import SwiftData
 import Observation   // Para `@Observable` (iOS 17+) o `@MainActor`
 
+/// # CollectionViewModel
+///
+/// Gestiona la **colección local** de mangas del usuario usando SwiftData.
+/// Carga, actualiza y elimina instancias de ``UserCollectionEntry`` manteniendo la UI reactiva
+/// mediante `@Observable`.
+///
+/// ## Overview
+/// - Inyecta un ``ModelContext`` desde la vista.
+/// - Expone la lista `entries` ordenada alfabéticamente por título.
+/// - Envuelve operaciones de escritura en `saveAndReload()` para refrescar estado tras persistir.
+///
+/// ## Usage
+/// ```swift
+/// @Environment(\.modelContext) var context
+/// @StateObject var vm = CollectionViewModel(context: context)
+///
+/// var body: some View {
+///     CollectionView()
+///         .environmentObject(vm)
+/// }
+/// ```
+///
+/// ## Topics
+/// ### Carga
+/// - ``loadEntries()``
+///
+/// ### Escritura
+/// - ``delete(_:)``
+/// - ``update(entry:volumesOwned:readingVolume:completeCollection:)``
+///
+/// ### Helpers
+/// - ``saveAndReload()``
+///
+/// ## See Also
+/// - ``UserCollectionEntry``
+/// - ``MangaEntity``
+/// - ``APIService``
+///
 @MainActor
 @Observable
 final class CollectionViewModel {

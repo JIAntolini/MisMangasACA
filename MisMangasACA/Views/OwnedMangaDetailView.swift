@@ -10,6 +10,45 @@ import SwiftUI
 import SwiftData      // Necesario para `@Bindable`
 import Charts
 
+/// # OwnedMangaDetailView
+///
+/// Vista de detalle y **edición** para un manga guardado en la colección local
+/// (`UserCollectionEntry`). Permite actualizar progreso de lectura, marcar
+/// la colección completa y alternar tomos comprados mediante chips.
+///
+/// ## Overview
+/// - Carga la portada remota si no existe `coverURL` local.
+/// - Muestra progreso con un gráfico *donut* de **Swift Charts**.
+/// - `dynamicMax` se adapta al mayor tomo comprado / leído.
+/// - Cambia de layout según `horizontalSizeClass`.
+///
+/// ## Interaction
+/// | Componente | Acción | Estado afectado |
+/// |------------|--------|-----------------|
+/// | Toggle “Colección completa” | Marca toda la colección | `entry.completeCollection` |
+/// | Slider de progreso | Ajusta tomo en lectura | `entry.readingVolume` |
+/// | Chips 1…N | Alterna tomos comprados | `entry.volumesOwned` |
+///
+/// ## Accessibility
+/// - La donut chart tiene `accessibilityLabel` y `accessibilityValue`.
+/// - Portada incluye `accessibilityLabel` descriptivo.
+///
+/// ## Usage
+/// ```swift
+/// NavigationLink {
+///     OwnedMangaDetailView(entry: entry)
+/// } label: {
+///     Text(entry.title)
+/// }
+/// ```
+///
+/// ## See Also
+/// - ``UserCollectionEntry``
+/// - ``CollectionView``
+///
+/// ## Author
+/// Creado por Juan Ignacio Antolini — 2025
+///
 struct OwnedMangaDetailView: View {
 
     /// Entrada persistente de la colección que estamos editando.

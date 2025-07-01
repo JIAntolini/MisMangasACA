@@ -9,6 +9,41 @@
 import SwiftUI
 import SwiftData
 
+/// # CollectionView
+///
+/// Muestra la **colección local** de mangas del usuario almacenada en SwiftData.
+/// Cambia dinámicamente entre lista y cuadrícula según el tamaño de pantalla
+/// y el número de ítems.
+///
+/// ## Overview
+/// - Usa `@Query` para sincronizar automáticamente las instancias de
+///   ``UserCollectionEntry``.
+/// - En iPhone (compact) o cuando hay menos de 5 mangas → lista vertical.
+/// - En iPad (regular) y 5+ mangas → `LazyVGrid` adaptativa.
+/// - Permite eliminar ítems con `EditButton`.
+///
+/// ## Layout Switching
+/// | Size Class | Count | Layout |
+/// |------------|-------|--------|
+/// | Compact    | *cualquiera* | Lista (`List`) |
+/// | Regular    | `< 5` | Lista |
+/// | Regular    | `≥ 5` | Cuadrícula (`LazyVGrid`) |
+///
+/// ## Topics
+/// ### Subvistas
+/// - ``OwnedMangaDetailView``
+///
+/// ### Helpers
+/// - ``coverImage(for:)``
+/// - ``navigationCell(for:imageSize:)``
+///
+/// ## See Also
+/// - ``UserCollectionEntry``
+/// - ``CollectionViewModel``
+///
+/// ## Author
+/// Creado por Juan Ignacio Antolini — 2025
+///
 struct CollectionView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \UserCollectionEntry.title) var entries: [UserCollectionEntry]

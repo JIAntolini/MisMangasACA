@@ -8,6 +8,46 @@
 
 import Foundation
 
+/// # AuthorsViewModel
+///
+/// Maneja la lógica de la vista **Autores**: descarga el listado completo,
+/// aplica búsqueda local / remota y gestiona la paginación incremental.
+///
+/// ## Overview
+/// - Consume ``APIService`` para `fetchAllAuthors()` y `searchAuthors(_:)`.
+/// - Expone `displayedAuthors` calculado según `searchText` y `currentPage`.
+/// - Soporta “infinite scroll” con ``loadNextPageIfNeeded(currentItem:)``.
+///
+/// ## Usage
+/// ```swift
+/// @StateObject var vm = AuthorsViewModel()
+///
+/// var body: some View {
+///     AuthorsView()
+///         .environmentObject(vm)
+///         .task { await vm.loadAuthors() }
+/// }
+/// ```
+///
+/// ## Topics
+/// ### Carga
+/// - ``loadAuthors(forceReload:)``
+/// - ``searchAuthorsRemotely(_:)``
+///
+/// ### Paginación
+/// - ``loadNextPage()``
+/// - ``loadNextPageIfNeeded(currentItem:)``
+///
+/// ### Helpers
+/// - ``displayedAuthors``
+///
+/// ## See Also
+/// - ``AuthorDTO``
+/// - ``APIService``
+///
+/// ## Author
+/// Creado por Juan Ignacio Antolini — 2025
+///
 @MainActor
 final class AuthorsViewModel: ObservableObject {
     @Published var authors: [AuthorDTO] = []

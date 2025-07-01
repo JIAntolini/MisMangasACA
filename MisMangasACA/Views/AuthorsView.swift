@@ -1,13 +1,43 @@
-//
-//  AuthorsView.swift
-//  MisMangasACA
-//
-//  Created by Juan Ignacio Antolini on 21/06/2025.
-//
-
-
-import SwiftUI
-
+/// # AuthorsView
+///
+/// Lista de **autores** con búsqueda integrada y paginación infinita.
+/// Permite navegar al detalle de mangas de cada autor.
+///
+/// ## Overview
+/// - Barra superior con `TextField` y lupa para búsqueda local/remota.
+/// - Agrupa autores por inicial (`A–Z`, “#” para no alfabéticos).
+/// - Paginación incremental: carga más al llegar al final.
+/// - Indicador *shimmer* mientras descarga la primera página.
+/// - Pull‑to‑refresh para recargar todo.
+///
+/// ## Usage
+/// ```swift
+/// @StateObject var vm = AuthorsViewModel()
+///
+/// AuthorsView()                 // inyecta el ViewModel desde el parent
+///     .environmentObject(vm)
+///     .task { await vm.loadAuthors() }
+/// ```
+///
+/// ## Topics
+/// ### Subvistas
+/// - ``AuthorMangasView``
+///
+/// ### Helpers
+/// - ``groupedAuthors``
+/// - ``sectionTitles``
+///
+/// ### Modifiers
+/// - ``shimmering()``
+///
+/// ## See Also
+/// - ``AuthorsViewModel``
+/// - ``AuthorDTO``
+/// - ``HomeView``
+///
+/// ## Author
+/// Creado por Juan Ignacio Antolini — 2025
+///
 struct AuthorsView: View {
     @EnvironmentObject var viewModel: AuthorsViewModel
 

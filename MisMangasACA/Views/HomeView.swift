@@ -7,12 +7,58 @@
 
 import SwiftUI
 
+/// # HomeView
+///
+/// Vista principal de **MisMangasACA**.  
+/// Presenta un listado (o cuadrícula) infinito de mangas, permite búsquedas,
+/// filtros avanzados y refresco contextual.
+///
+/// ## Overview
+/// - Consume ``HomeViewModel`` como `@StateObject`.
+/// - Alterna **Lista** ⇄ **Grid** con un botón de toolbar.
+/// - Integra filtro avanzado mediante ``FilterInspector``
+///   y búsqueda por título en la barra superior.
+/// - Soporta paginación infinita y pull‑to‑refresh.
+///
+/// ## Usage
+/// ```swift
+/// HomeView()                   // Modo iPhone / TabView
+/// HomeView(selectedManga: $m)  // Integrado en NavigationSplitView (iPad)
+/// ```
+///
+/// ## Topics
+/// ### Subvistas
+/// - ``MangaRowView``
+/// - ``MangaCoverView``
+/// - ``FilterInspector``
+///
+/// ### Estado local
+/// - `query` – Texto de búsqueda.
+/// - `useGrid` – Alterna vista lista / grid.
+/// - `showFilters` – Presenta el inspector.
+/// - `isRefreshing` – Controla animación del botón refresh.
+///
+/// ## See Also
+/// - ``HomeViewModel``
+/// - ``MangaDTO``
+/// - ``AuthorsView``
+/// - ``CollectionView``
+///
+/// ## Author
+/// Creado por Juan Ignacio Antolini — 2025
+///
 struct HomeView: View {
     /// Manga seleccionado (para NavigationSplitView en iPad)
     @Binding var selectedManga: MangaDTO?
     
     @StateObject private var vm = HomeViewModel()
     @State private var query = "" // Estado para la barra de búsqueda
+    /// Controla la presentación del panel de filtros
+    @State private var showFilters = false
+    /// Para animar el botón de refresco
+    @State private var isRefreshing = false
+    /// Cambia entre vista de lista y grid
+    @State private var useGrid = false
 
     // Inicializador por defecto para iPhone / TabView.
     init(selectedManga: Binding<MangaDTO?> = .constant(nil)) {
@@ -40,64 +86,79 @@ struct HomeView: View {
                     .buttonStyle(.plain)
                 }
                 // Botón de filtro por género como icono
-                if !vm.genres.isEmpty {
-                    Menu {
-                        Button("Todos", action: {
-                            vm.selectedGenre = nil
-                            query = ""
-                            Task { await vm.loadPage(1, forceReload: true) }
-                        })
-                        ForEach(vm.genres, id: \.self) { genre in
-                            Button(genre, action: {
-                                vm.selectedGenre = genre
-                                query = ""
-                                Task { await vm.loadMangasByGenre(genre, forceReload: true) }
-                            })
-                        }
-                    } label: {
-                        // Solo ícono, sin texto
-                        Label("", systemImage: "line.3.horizontal.decrease.circle")
-                            .labelStyle(.iconOnly)
-                            .font(.title2)
-                            .foregroundColor(.accentColor)
-                            .padding(.trailing, 4)
-                    }
-                    .accessibilityLabel("Filtrar por género")
+                Button {
+                    showFilters = true
+                } label: {
+                    Label("", systemImage: "line.3.horizontal.decrease.circle")
+                        .labelStyle(.iconOnly)
+                        .font(.title2)
+                        .foregroundColor(.accentColor)
+                        .padding(.trailing, 4)
                 }
+                .accessibilityLabel("Mostrar filtros")
             }
             .padding(.horizontal)
             .padding(.top, 4)
             
             ScrollView {
-                LazyVStack(spacing: 16) {
-                    ForEach(vm.mangas, id: \.id) { manga in
-                        NavigationLink(destination: DetailView(manga: manga)) {
-                            MangaRowView(manga: manga)
-                        }
-                        .simultaneousGesture(TapGesture().onEnded {
-                            selectedManga = manga             // notifica al SplitView
-                        })
-                        .onAppear {
-                            Task {
-                                await vm.loadNextPageIfNeeded(currentItem: manga)
+                if useGrid {
+                    // ───────── GRID (2‑4 columnas adaptativas) ─────────
+                    let columns = [GridItem(.adaptive(minimum: 160), spacing: 16)]
+                    LazyVGrid(columns: columns, spacing: 16) {
+                        ForEach(vm.mangas, id: \.id) { manga in
+                            NavigationLink(destination: DetailView(manga: manga)) {
+                                MangaCoverView(manga: manga)
+                            }
+                            .simultaneousGesture(TapGesture().onEnded {
+                                selectedManga = manga
+                            })
+                            .onAppear {
+                                Task { await vm.loadNextPageIfNeeded(currentItem: manga) }
                             }
                         }
                     }
-                    
-                    if vm.isLoadingPage {
-                        ProgressView()
-                            .padding()
+                    .padding(.horizontal)
+                    .animation(.easeInOut, value: vm.mangas.count) // Animación de aparición
+                } else {
+                    // ───────── LISTA (fila horizontal) ─────────
+                    LazyVStack(spacing: 16) {
+                        ForEach(vm.mangas, id: \.id) { manga in
+                            NavigationLink(destination: DetailView(manga: manga)) {
+                                MangaRowView(manga: manga)
+                            }
+                            .simultaneousGesture(TapGesture().onEnded {
+                                selectedManga = manga
+                            })
+                            .onAppear {
+                                Task { await vm.loadNextPageIfNeeded(currentItem: manga) }
+                            }
+                        }
                     }
-
-                    if !vm.isLoadingPage && vm.isLastPage && !vm.mangas.isEmpty {
-                        Text("No hay más mangas para mostrar.")
+                    .padding()
+                    .animation(.easeInOut, value: vm.mangas.count) // Animación de aparición
+                }
+                
+                if vm.isLoadingPage {
+                    ProgressView()
+                        .padding()
+                }
+                
+                if !vm.isLoadingPage && vm.mangas.isEmpty {
+                    VStack(spacing: 8) {
+                        Image(systemName: "tray")
+                            .font(.system(size: 40))
+                            .foregroundColor(.secondary.opacity(0.6))
+                        Text("Sin resultados")
                             .foregroundColor(.secondary)
                             .font(.callout)
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .padding(.vertical, 16)
                     }
+                    .padding(.vertical, 24)
+                } else if !vm.isLoadingPage && vm.isLastPage {
+                    Text("No hay más mangas para mostrar.")
+                        .foregroundColor(.secondary)
+                        .font(.callout)
+                        .padding(.vertical, 16)
                 }
-                .padding()
             }
             .refreshable {
                 if vm.selectedGenre != nil {
@@ -109,15 +170,48 @@ struct HomeView: View {
                 }
             }
             .background(.ultraThinMaterial) // fallback para iOS < 18; usa backgroundEffect en Xcode 16+
+#if swift(>=5.9)
+            // Presenta como .inspector en iPad/macOS (iOS 17+). En iPhone se muestra como sheet.
+            .inspector(isPresented: $showFilters) {
+                FilterInspector(vm: vm)
+            }
+#else
+            .sheet(isPresented: $showFilters) {
+                FilterInspector(vm: vm)
+            }
+#endif
             .navigationTitle(navigationTitle)
             .toolbar {
+                // Toggle Grid / List
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        useGrid.toggle()
+                    } label: {
+                        Image(systemName: useGrid ? "list.bullet" : "square.grid.2x2")
+                    }
+                    .accessibilityLabel(useGrid ? "Ver como lista" : "Ver como cuadrícula")
+                }
                 // Ejemplo de toolbar modular
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        Task { await vm.loadNextPageIfNeeded(currentItem: nil) }
+                        guard !isRefreshing else { return }
+                        isRefreshing = true
+                        Task {
+                            if let genre = vm.selectedGenre {
+                                await vm.loadMangasByGenre(genre, forceReload: true)
+                            } else if !query.isEmpty {
+                                await vm.searchMangas(with: query)
+                            } else {
+                                await vm.applyFilters(page: 1)
+                            }
+                            await MainActor.run { isRefreshing = false }   // <- NUEVO
+                        }
                     } label: {
                         Image(systemName: "arrow.clockwise")
+                            .rotationEffect(Angle.degrees(isRefreshing ? 360 : 0))
+                            .animation(isRefreshing ? .linear(duration: 0.8).repeatForever(autoreverses: false) : .default, value: isRefreshing)
                     }
+                    .disabled(isRefreshing)
                 }
             }
         }
@@ -134,7 +228,7 @@ struct HomeView: View {
         }
         // Carga inicial: primero los géneros para el filtro y luego la primera página de mangas (solo si no hay datos)
         .task {
-            await vm.loadGenres()
+            await vm.loadCatalogs()
             if vm.mangas.isEmpty {
                 await vm.loadPage(1, forceReload: true)
             }
@@ -276,3 +370,157 @@ struct MainTabView: View {
         }
     }
 }
+
+// MARK: – Panel de filtros avanzado
+@available(iOS 17.0, macOS 14.0, *)
+struct FilterInspector: View {
+    @ObservedObject var vm: HomeViewModel
+    @Environment(\.dismiss) private var dismiss     // Para cerrar el inspector/sheet
+
+    // Wrapper que da identidad estable a cada opción de catálogo
+    private struct OptionRow: Identifiable, Hashable {
+        let id = UUID()
+        let label: String
+    }
+
+    // Colecciones con identidad estable (se rellenan en onAppear)
+    @State private var demoRows: [OptionRow] = []
+    @State private var themeRows: [OptionRow] = []
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                // Campo de texto para título
+                Section("Título") {
+                    TextField(
+                        "",
+                        text: $vm.filterSearchText,
+                        prompt: Text(vm.filterContains ? "Contiene…" : "Empieza por…")
+                    )
+                    .textInputAutocapitalization(.never)
+                    .disableAutocorrection(true)
+                }
+
+                // Segmentado Contiene / Empieza por
+                Section("Coincidencia") {
+                    Picker("", selection: $vm.filterContains) {
+                        Text("Contiene").tag(true)
+                        Text("Empieza por").tag(false)
+                    }
+                    .pickerStyle(.segmented)
+                }
+
+                // Género (selección única)
+                if !vm.genres.isEmpty {
+                    Section("Género") {
+                        Picker("Seleccionar género", selection: $vm.selectedGenre) {
+                            Text("Todos").tag(String?.none)
+                            ForEach(vm.genres, id: \.self) { genre in
+                                Text(genre).tag(String?.some(genre))
+                            }
+                        }
+                        .labelsHidden()          // Evita la fila vacía en el picker
+                        .pickerStyle(.inline)
+                    }
+                }
+
+                // Demografías (multi‑selección)
+                if !vm.demographics.isEmpty {
+                    Section("Demografía") {
+                        ForEach(demoRows) { row in
+                            Toggle(row.label, isOn: Binding(
+                                get: { vm.selectedDemographies.contains(row.label) },
+                                set: { isOn in
+                                    if isOn {
+                                        vm.selectedDemographies.insert(row.label)
+                                    } else {
+                                        vm.selectedDemographies.remove(row.label)
+                                    }
+                                }))
+                        }
+                    }
+                }
+
+                // Temáticas (multi‑selección)
+                if !vm.themes.isEmpty {
+                    Section("Temática") {
+                        ForEach(themeRows) { row in
+                            Toggle(row.label, isOn: Binding(
+                                get: { vm.selectedThemes.contains(row.label) },
+                                set: { isOn in
+                                    if isOn {
+                                        vm.selectedThemes.insert(row.label)
+                                    } else {
+                                        vm.selectedThemes.remove(row.label)
+                                    }
+                                }))
+                        }
+                    }
+                }
+            }
+            .onAppear {
+                if demoRows.isEmpty {
+                    demoRows  = vm.demographics.map { OptionRow(label: $0) }
+                    themeRows = vm.themes.map        { OptionRow(label: $0) }
+                }
+            }
+            .navigationTitle("Filtros")
+            .toolbar {
+                // Botón Limpiar
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Limpiar") {
+                        dismiss()   // Cierra primero
+                        Task {
+                            vm.resetFilters()
+                            await vm.loadPage(1, forceReload: true)
+                        }
+                    }
+                    .foregroundColor(.accentColor)
+                }
+                // Botón Aplicar
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Aplicar") {
+                        dismiss()   // Cierra primero
+                        Task {
+                            await vm.applyFilters()
+                        }
+                    }
+                    .foregroundColor(.accentColor)
+                }
+            }
+            .tint(.accentColor)   // Fuerza botones azules en cualquier estado del sheet
+        }
+    }
+}
+
+// MARK: – Celda compacta para grid
+/*
+ struct MangaCoverCell: View {
+    let manga: MangaDTO
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            AsyncImage(url: manga.mainPicture.flatMap {
+                URL(string: $0.replacingOccurrences(of: "\"", with: ""))
+            }) { phase in
+                switch phase {
+                case .empty: Color.gray.opacity(0.3)
+                case .success(let img): img.resizable().scaledToFill()
+                case .failure: Color.red
+                @unknown default: Color.gray
+                }
+            }
+            .frame(width: 140, height: 200)
+            .clipped()
+            .cornerRadius(8)
+            .shadow(radius: 1)
+            
+            Text(manga.title)
+                .font(.caption)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .frame(width: 140)
+        }
+    }
+}
+*/

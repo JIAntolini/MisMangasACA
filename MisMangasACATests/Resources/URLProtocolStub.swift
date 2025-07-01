@@ -18,6 +18,10 @@ final class URLProtocolStub: URLProtocol {
 
     private static var stub: Stub?
 
+    /// Handler usado en tests para inspeccionar la request y devolver la respuesta deseada.
+    /// Si está seteado, se ignora el `stub` tradicional.
+    static var requestHandler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
+
     // MARK: Register / Unregister
     static func register(_ stub: Stub) {
         URLProtocolStub.stub = stub
@@ -26,6 +30,7 @@ final class URLProtocolStub: URLProtocol {
 
     static func unregister() {
         URLProtocolStub.stub = nil
+        URLProtocolStub.requestHandler = nil
         URLProtocol.unregisterClass(URLProtocolStub.self)
     }
 
@@ -34,7 +39,26 @@ final class URLProtocolStub: URLProtocol {
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
 
     override func startLoading() {
-        guard let client = client, let stub = URLProtocolStub.stub else { return }
+        guard let client = client else { return }
+
+        // Si hay un handler custom, lo usamos
+        if let handler = URLProtocolStub.requestHandler {
+            do {
+                let (response, data) = try handler(request)
+                client.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+                client.urlProtocol(self, didLoad: data)
+                client.urlProtocolDidFinishLoading(self)
+            } catch {
+                client.urlProtocol(self, didFailWithError: error)
+            }
+            return
+        }
+
+        // Fallback al stub estructurado
+        guard let stub = URLProtocolStub.stub else {
+            client.urlProtocol(self, didFailWithError: URLError(.badURL))
+            return
+        }
 
         if let response = stub.response {
             client.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)

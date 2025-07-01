@@ -76,7 +76,7 @@ struct SplashView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 6))
                             .opacity(0.85)
 
-                        Text("Gracias a Apple Coding Academy")
+                        Text("Desarrollada con el apoyo de Apple Coding Academy")
                             .font(.footnote)
                             .foregroundStyle(.white.opacity(0.7))
                     }

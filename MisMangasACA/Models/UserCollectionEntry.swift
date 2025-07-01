@@ -9,7 +9,41 @@
 import Foundation
 import SwiftData
 
-/// Modelo persistente de SwiftData que representa un manga dentro de la colección local del usuario.
+/// # UserCollectionEntry
+///
+/// Representa un manga dentro de la **colección local** del usuario, persistido con SwiftData.
+/// Guarda tanto la referencia al manga remoto (`mangaID`) como el estado de progreso y posesión.
+///
+/// ## Overview
+/// - Persiste la lista de tomos comprados como JSON comprimido en `volumesOwnedBlob`.
+/// - Expone `volumesOwned` como propiedad calculada para accesos tipo array.
+/// - Registra `readingVolume`, `completeCollection` y `updatedAt`.
+///
+/// ## Usage
+/// ```swift
+/// let entry = UserCollectionEntry(
+///     mangaID: 42,
+///     title: "One Piece",
+///     coverURL: "https://…/onepiece.jpg",
+///     volumesOwned: [1,2,3,4],
+///     readingVolume: 4,
+///     completeCollection: false
+/// )
+/// context.insert(entry)
+/// try context.save()
+/// ```
+///
+/// ## Persistence Details
+/// | Propiedad | Uso | Persistencia |
+/// |-----------|-----|--------------|
+/// | `id` | UUID único | `.unique` |
+/// | `volumesOwnedBlob` | JSON binario comprimido | `.externalStorage` |
+/// | `updatedAt` | Marca de tiempo | Actualizada manualmente |
+///
+/// ## See Also
+/// - ``MangaEntity``
+/// - ``APIService``
+///
 @Model
 final class UserCollectionEntry {
     // MARK: - Propiedades básicas

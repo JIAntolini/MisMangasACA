@@ -7,6 +7,42 @@
 
 import SwiftUI
 
+/// # AuthorMangasViewModel
+///
+/// Maneja la lista paginada de mangas asociados a un **autor**.
+/// Interactúa con ``APIService`` para llamar a `/list/mangaByAuthor/{id}``
+/// y publica los resultados para que la UI de ``AuthorMangasView`` reaccione.
+///
+/// ## Overview
+/// - Carga la página 1 en ``loadPage(_:)`` y anexa más resultados con
+///   ``loadNextPageIfNeeded(currentItem:)``.
+/// - Mantiene estado `isLoading`, `isLastPage` y `currentPage`.
+///
+/// ## Usage
+/// ```swift
+/// let vm = AuthorMangasViewModel(author: author)
+/// .task { await vm.loadPage(1) }
+/// ```
+///
+/// ## Topics
+/// ### Carga
+/// - ``loadPage(_:)``
+/// - ``loadNextPageIfNeeded(currentItem:)``
+///
+/// ## Published Properties
+/// - ``mangas``
+/// - ``isLoading``
+/// - ``isLastPage``
+/// - ``currentPage``
+///
+/// ## See Also
+/// - ``AuthorDTO``
+/// - ``MangaDTO``
+/// - ``APIService``
+///
+/// ## Author
+/// Creado por Juan Ignacio Antolini — 2025
+///
 class AuthorMangasViewModel: ObservableObject {
     @Published var mangas: [MangaDTO] = []
     @Published var isLoading = false

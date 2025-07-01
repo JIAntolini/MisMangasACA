@@ -87,6 +87,44 @@ final class AuthorEntity: NamedEntity {
 
 // MARK: - MangaEntity
 
+/// # MangaEntity
+///
+/// Entidad principal que representa un manga persistido en **SwiftData**.
+/// Sincroniza la información proveniente de la API con el estado local del usuario.
+/// 
+/// ## Overview
+/// - Contiene propiedades básicas (`id`, `title`, `coverURL`, `score`, `synopsis`).
+/// - Mantiene relaciones **N‑to‑M** con catálogos:  
+///   ``GenreEntity`` / ``ThemeEntity`` / ``DemographicEntity`` / ``AuthorEntity``.
+/// - Guarda progreso del usuario: tomos comprados, tomo en lectura y si la colección está completa.
+///
+/// ## Usage
+/// ```swift
+/// let ctx = ModelContext(myContainer)
+/// let dto = try await api.fetchMangaByID(27)
+/// let manga = MangaEntity(from: dto, context: ctx)
+/// ctx.insert(manga)
+/// try ctx.save()
+/// ```
+///
+/// ## Relationships
+/// | Propiedad | Tipo | Descripción |
+/// |-----------|------|-------------|
+/// | `genres` | `[GenreEntity]` | Géneros asociados |
+/// | `themes` | `[ThemeEntity]` | Temáticas |
+/// | `demographics` | `[DemographicEntity]` | Demografía (ej. Shōnen) |
+/// | `authors` | `[AuthorEntity]` | Autores principales |
+///
+/// ## Persistence
+/// Con la macro `@Model`, SwiftData genera automáticamente:
+/// - Migraciones ligeras  
+/// - Claves primarias (usamos `@Attribute(.unique)` en `id`)  
+/// - Soporte de predicados con la macro ``#Predicate``
+///
+/// ## See Also
+/// - ``MangaDTO`` (fuente remota)
+/// - ``UserCollectionEntry`` (estado de colección del usuario)
+///
 @Model
 final class MangaEntity {
 

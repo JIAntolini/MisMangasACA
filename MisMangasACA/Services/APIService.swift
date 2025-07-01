@@ -31,13 +31,52 @@ private enum HTTPMethod: String {
     case GET, POST, DELETE, PUT
 }
 
+/// # APIService
+///
+/// Servicio de red central de **MisMangasACA**.
+/// Encapsula todas las llamadas HTTP al backend y expone funciones
+/// fuertemente tipadas que retornan modelos `Codable`.
+///
+/// ## Overview
+/// - Inyecta una `URLSession` para facilitar pruebas unitarias.
+/// - Usa `async/await`, `URLSession.data(for:)` y `Codable`.
+/// - Decodifica respuestas paginadas con ``PaginatedResponse``.
+///
+/// ## Usage
+/// ```swift
+/// let mangas = try await APIService.shared.fetchBestMangas(page: 1, per: 20)
+/// ```
+///
+/// ## Dependency Injection
+/// Para tests:
+///
+/// ```swift
+/// let api = APIService(session: URLSession(configuration: .ephemeral))
+/// ```
+///
+/// ## Topics
+/// ### Métodos de listado
+/// - ``fetchMangas(page:per:)``
+/// - ``fetchBestMangas(page:per:)``
+/// - ``fetchMangasByGenre(_:page:per:)``
+/// - ``fetchAllAuthors()``
+///
+/// ### Búsquedas
+/// - ``searchMangasContains(_:page:per:)``
+/// - ``searchMangasBeginsWith(_:page:per:)``
+/// - ``customSearch(_:page:per:)``
+///
+/// ### Entidades relacionadas
+/// - ``PaginatedResponse``
+/// - ``CustomSearch``
+///
 // MARK: – Servicio de API
 open class APIService {
     // Sesión inyectable para pruebas (por defecto URLSession.shared)
     private let session: URLSession
 
     // Init configurable; el singleton usa el valor por defecto
-    init(session: URLSession = .shared) {
+    public init(session: URLSession = .shared) {
         self.session = session
     }
 
@@ -143,6 +182,20 @@ open class APIService {
     /// - Returns: array de String
     func fetchGenres() async throws -> [String] {
         return try await request(path: "/list/genres")
+    }
+
+    // MARK: – 3.1 Listado de demografías
+    /// Obtiene la lista de todas las demografías disponibles (por ejemplo: "Shōnen", "Seinen", "Shōjo").
+    /// - Returns: Un array de `String` con los nombres de las demografías.
+    func fetchDemographics() async throws -> [String] {
+        return try await request(path: "/list/demographics")
+    }
+
+    // MARK: – 3.2 Listado de temáticas
+    /// Obtiene la lista de todas las temáticas disponibles (por ejemplo: "Aventura", "Romance", "Deportes").
+    /// - Returns: Un array de `String` con los nombres de las temáticas.
+    func fetchThemes() async throws -> [String] {
+        return try await request(path: "/list/themes")
     }
     
     /// Obtiene los mangas asociados a un género específico usando el endpoint /list/mangaByGenre/{genre}, con soporte de paginación.
@@ -253,7 +306,7 @@ open class APIService {
     /// Realiza búsqueda avanzada de mangas según parámetros flexibles.
     /// - Parameter search: Estructura CustomSearch con filtros combinados.
     /// - Returns: Paginado de MangaDTO.
-    func customSearch(_ search: CustomSearch, page: Int = 1, per: Int = 10) async throws -> PaginatedResponse<MangaDTO> {
+    open func customSearch(_ search: CustomSearch, page: Int = 1, per: Int = 10) async throws -> PaginatedResponse<MangaDTO> {
         let path = "/search/manga"
         var components = URLComponents(url: baseURL.appendingPathComponent(path), resolvingAgainstBaseURL: false)!
         components.queryItems = [
@@ -277,13 +330,29 @@ open class APIService {
     }
 }
 
-/// Estructura para búsquedas avanzadas (CustomSearch) en el endpoint POST /search/manga
-struct CustomSearch: Codable {
+/// Estructura para búsquedas avanzadas (POST /search/manga).
+/// Cada propiedad es opcional; la API combinará los filtros.
+/// - `searchTitle`: texto de título.
+/// - `searchAuthorIds`: IDs exactos de autores seleccionados (tiene prioridad sobre nombre/apellido).
+/// - `searchAuthorFirstName` / `searchAuthorLastName`: búsqueda textual de autor.
+/// - `searchGenres`, `searchThemes`, `searchDemographics`: filtros de catálogo.
+/// - `searchContains`: `true` → "contiene", `false` → "empieza por".
+public struct CustomSearch: Codable {
+    // Texto de título a buscar
     var searchTitle: String?
+
+    // IDs exactos de autores para filtrar
+    var searchAuthorIds: [Int]?
+
+    // Búsqueda textual por nombre/apellido (fallback)
     var searchAuthorFirstName: String?
     var searchAuthorLastName: String?
+
+    // Filtros por catálogos
     var searchGenres: [String]?
     var searchThemes: [String]?
     var searchDemographics: [String]?
+
+    // true → "contiene", false → "empieza por"
     var searchContains: Bool
 }

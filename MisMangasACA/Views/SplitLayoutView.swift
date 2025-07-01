@@ -15,6 +15,45 @@ enum SidebarSection: String, CaseIterable, Identifiable {
     var id: Self { self }
 }
 
+/// # SplitLayoutView
+///
+/// Disposición principal para **iPad** y macOS que usa `NavigationSplitView`
+/// para presentar una barra lateral con secciones y un área de detalle.
+///
+/// ## Overview
+/// - Secciones: *Mangas*, *Autores* y *Colección*.  
+/// - La selección de la barra lateral se refleja en `selection: SidebarSection`.  
+/// - Muestra ``HomeView``, ``AuthorsView`` o ``CollectionView`` en el
+///   panel central según la opción elegida.
+/// - El panel de detalle enseña ``DetailView`` del manga seleccionado
+///   o un ``WelcomeDetailView`` de relleno.
+///
+/// ## Interaction Flow
+/// ```swift
+/// ▼ Sidebar            ▼ Content                ▼ Detail
+/// ┌─────────────┐      ┌──────────────────────┐ ┌──────────────────────┐
+/// │ ▸ Mangas     │ ──▶ │ HomeView             │ │ DetailView (manga)   │
+/// │   Autores     │    │                      │ │ o WelcomeDetailView  │
+/// │   Colección   │    │                      │ └──────────────────────┘
+/// └─────────────┘      └──────────────────────┘
+/// ```
+///
+/// ## Topics
+/// ### Enumerations
+/// - ``SidebarSection``
+///
+/// ### Helper Methods
+/// - ``icon(for:)``
+///
+/// ## See Also
+/// - ``HomeView``
+/// - ``AuthorsView``
+/// - ``CollectionView``
+/// - ``DetailView``
+///
+/// ## Author
+/// Creado por Juan Ignacio Antolini — 2025
+///
 struct SplitLayoutView: View {
     @State private var selection: SidebarSection? = .mangas
     /// Manga seleccionado para mostrar en el panel de detalle (iPad)

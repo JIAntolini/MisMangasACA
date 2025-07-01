@@ -9,6 +9,65 @@
 import Foundation
 import Combine
 
+/// # HomeViewModel
+///
+/// `HomeViewModel` orquesta la lógica de negocio de la pantalla **Home**:
+/// carga la lista de mangas, gestiona la paginación infinita y aplica filtros avanzados.
+///
+/// ## Overview
+/// - Consume ``APIService`` de forma asíncrona (`async/await`).
+/// - Expone estado `@Published` para que la UI se reactive automáticamente.
+/// - Soporta cuatro contextos de carga:
+///   - *Top* (`/list/bestMangas`)
+///   - *Búsqueda simple* (`/search/mangasContains`)
+///   - *Por género* (`/list/mangaByGenre`)
+///   - *Búsqueda avanzada* (``CustomSearch`` + `/search/manga`)
+///
+/// ## Usage
+/// ```swift
+/// @StateObject private var vm = HomeViewModel()
+///
+/// var body: some View {
+///     HomeView(viewModel: vm)
+///         .task { await vm.loadPage(1) } // carga inicial
+/// }
+/// ```
+///
+/// ## Paging Flow
+/// 1. La UI llama ``loadNextPageIfNeeded(currentItem:)`` al aparecer cada celda.
+/// 2. El método decide si traer la página siguiente según `currentItem`.
+/// 3. Los nuevos resultados se anexan a ``mangas`` y actualizan `currentPage`, `isLastPage`.
+///
+/// ## Filtering
+/// - ``applyFilters(page:)`` combina la selección de la UI en un ``CustomSearch``.
+/// - ``resetFilters()`` limpia todos los estados seleccionados y vuelve al *Top*.
+///
+/// ## Topics
+/// ### Carga y Paginación
+/// - ``loadPage(_:forceReload:)``
+/// - ``loadNextPageIfNeeded(currentItem:)``
+///
+/// ### Búsqueda
+/// - ``searchMangas(with:page:)``
+/// - ``suggestMangas(prefix:page:)``
+/// - ``advancedSearch(with:page:)``
+///
+/// ### Catálogos & Géneros
+/// - ``loadCatalogs()``
+/// - ``loadGenres()``
+/// - ``loadMangasByGenre(_:page:forceReload:)``
+///
+/// ### Helpers
+/// - ``resetFilters()``
+///
+/// ## See Also
+/// - ``APIService``
+/// - ``MangaDTO``
+/// - ``MangaEntity``
+///
+/// ## Author
+/// Creado por Juan Ignacio Antolini — 2025
+///
 @MainActor
 final class HomeViewModel: ObservableObject {
     // Servicio inyectable (por defecto el singleton compartido)
@@ -19,8 +78,22 @@ final class HomeViewModel: ObservableObject {
     @Published var isLoadingPage = false
     @Published var isLastPage = false
     @Published var currentPage = 1
+    // Catálogos de filtros
     @Published var genres: [String] = []
+    @Published var demographics: [String] = []
+    @Published var themes: [String] = []
+
+    // Filtros seleccionados (UI)
     @Published var selectedGenre: String?
+    @Published var selectedDemographies: Set<String> = []
+    @Published var selectedThemes: Set<String> = []
+    @Published var selectedAuthorsIDs: Set<Int> = []   // usaremos id de AuthorDTO
+
+    /// Texto de búsqueda libre (título) que proviene de la UI de filtros
+    @Published var filterSearchText: String = ""
+
+    /// true = “contiene”, false = “empieza por”
+    @Published var filterContains: Bool = true
     @Published var totalMangas: Int = 0
     private let perPage = 20
     
@@ -30,6 +103,7 @@ final class HomeViewModel: ObservableObject {
         case top
         case busqueda(query: String)
         case genero(String)
+        case filtros(CustomSearch)
     }
     private var context: Context = .top
     
@@ -52,9 +126,43 @@ final class HomeViewModel: ObservableObject {
                 await searchMangas(with: query, page: currentPage + 1)
             case .genero(let genero):
                 await loadMangasByGenre(genero, page: currentPage + 1)
+            case .filtros(let search):
+                await advancedSearch(with: search, page: currentPage + 1)
             }
         }
     }
+    // MARK: – Construye búsqueda combinada desde filtros UI y la aplica
+    /// Convierte los filtros seleccionados en un `CustomSearch` y dispara la búsqueda.
+    func applyFilters(page: Int = 1) async {
+        // Si no hay filtros activos, carga el top por defecto
+        let anyFilterActive =
+            selectedGenre != nil ||
+            !selectedDemographies.isEmpty ||
+            !selectedThemes.isEmpty  ||
+            !selectedAuthorsIDs.isEmpty ||
+            !filterSearchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+
+        guard anyFilterActive else {
+            await loadPage(1, forceReload: true)
+            return
+        }
+
+        // Construye el objeto de búsqueda
+        let search = CustomSearch(
+            searchTitle: filterSearchText.isEmpty ? nil : filterSearchText,
+            searchAuthorIds: selectedAuthorsIDs.isEmpty ? nil : Array(selectedAuthorsIDs),
+            searchAuthorFirstName: nil,
+            searchAuthorLastName: nil,
+            searchGenres: selectedGenre.map { [$0] },
+            searchThemes: selectedThemes.isEmpty ? nil : Array(selectedThemes),
+            searchDemographics: selectedDemographies.isEmpty ? nil : Array(selectedDemographies),
+            searchContains: filterContains
+        )
+
+        context = .filtros(search)
+        await advancedSearch(with: search, page: page)
+    }
+
     
     func loadPage(_ page: Int, forceReload: Bool = false) async {
         context = .top
@@ -157,7 +265,6 @@ final class HomeViewModel: ObservableObject {
     ///   - search: filtros combinados (struct CustomSearch)
     ///   - page: página a buscar
     func advancedSearch(with search: CustomSearch, page: Int = 1) async {
-        context = .busqueda(query: search.searchTitle ?? "")
         isLoadingPage = true
         defer { isLoadingPage = false }
         do {
@@ -184,6 +291,38 @@ final class HomeViewModel: ObservableObject {
             print("Error en searchAuthors: \(error)")
             return []
         }
+    }
+}
+
+// MARK: - Carga de catálogos (géneros, demografías y temáticas)
+extension HomeViewModel {
+    /// Carga en paralelo los catálogos de filtros y publica los resultados.
+    func loadCatalogs() async {
+        async let genresTask: [String] = {
+            (try? await api.fetchGenres()) ?? []
+        }()
+        async let demoTask: [String] = {
+            (try? await api.fetchDemographics()) ?? []
+        }()
+        async let themesTask: [String] = {
+            (try? await api.fetchThemes()) ?? []
+        }()
+
+        // Espera resultados
+        let (genresResult, demoResult, themesResult) = await (genresTask, demoTask, themesTask)
+
+        // Publica en el MainActor (estamos ya en @MainActor)
+        self.genres = genresResult
+        self.demographics = demoResult
+        self.themes = themesResult
+    }
+
+    /// Utilidad para resetear los filtros cuando el usuario pulsa "Limpiar"
+    func resetFilters() {
+        selectedGenre = nil
+        selectedDemographies.removeAll()
+        selectedThemes.removeAll()
+        selectedAuthorsIDs.removeAll()
     }
 }
 

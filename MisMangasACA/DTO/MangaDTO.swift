@@ -7,7 +7,41 @@
 
 import Foundation
 
-// MARK: - MangaDTO
+/// # MangaDTO
+///
+/// Data Transfer Object que refleja la estructura JSON del backend para un **manga**.
+/// Se usa exclusivamente en la capa de red y se convierte luego en
+/// ``MangaEntity`` para persistencia.
+///
+/// ## Overview
+/// - Conforma a `Decodable` e `Identifiable`.
+/// - Corrige claves mal escritas mediante el enum `CodingKeys`.
+/// - Agrupa catálogos en sub‐DTOs: ``GenreDTO``, ``ThemeDTO``, ``DemographicDTO``,
+///   y los autores en ``AuthorDTO``.
+///
+/// ## JSON Mapping
+/// | Propiedad | Clave JSON | Notas |
+/// |-----------|------------|-------|
+/// | `titleJapanese` | `"titleJapanese"` | — |
+/// | `synopsis` | `"sypnosis"` | Backend typo corregido |
+/// | `mainPicture` | `"mainPicture"` | URL |
+///
+/// ## Usage
+/// ```swift
+/// let dto = try decoder.decode(MangaDTO.self, from: data)
+/// print(dto.title) // Título principal
+/// ```
+///
+/// ## See Also
+/// - ``GenreDTO``
+/// - ``ThemeDTO``
+/// - ``DemographicDTO``
+/// - ``AuthorDTO``
+/// - ``MangaEntity``
+///
+/// ## Author
+/// Creado por Juan Ignacio Antolini — 2025
+///
 public struct MangaDTO: Decodable, Identifiable {
     public let id: Int
     let title: String
@@ -21,7 +55,7 @@ public struct MangaDTO: Decodable, Identifiable {
     let startDate: Date?
     let endDate: Date?
     let mainPicture: String?
-    let background: String?         // Texto largo con descripción histórica
+    let background: String?         // Texto laaargo con descripción histórica
     let url: String?                   // Link externo
     let demographics: [DemographicDTO]
     let genres: [GenreDTO]
@@ -87,3 +121,30 @@ extension ThemeDTO: IdentifiableDTO { typealias Identifier = String }
 extension DemographicDTO: IdentifiableDTO { typealias Identifier = String }
 extension AuthorDTO: IdentifiableDTO { typealias Identifier = String }
 extension MangaDTO: IdentifiableDTO { typealias Identifier = Int }
+
+// MARK: – SwiftUI Preview helper
+#if DEBUG
+extension MangaDTO {
+    /// Ejemplo de manga estático para usar en previews
+    static let previewSample = MangaDTO(
+        id: 1,
+        title: "Fullmetal Alchemist",
+        titleJapanese: "鋼の錬金術師",
+        titleEnglish: "Fullmetal Alchemist",
+        synopsis: "Historia de dos hermanos alquimistas que buscan la Piedra Filosofal.",
+        chapters: 116,
+        volumes: 27,
+        score: 9.1,
+        status: "finished",
+        startDate: Date(timeIntervalSince1970: 978_220_800), // 1‑ene‑2001
+        endDate: nil,
+        mainPicture: "https://cdn.myanimelist.net/images/manga/3/243675.jpg",
+        background: nil,
+        url: "https://myanimelist.net/manga/25/Fullmetal_Alchemist",
+        demographics: [],
+        genres: [],
+        themes: [],
+        authors: []
+    )
+}
+#endif

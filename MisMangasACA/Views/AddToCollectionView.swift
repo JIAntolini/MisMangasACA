@@ -9,6 +9,41 @@
 import SwiftUI
 import SwiftData
 
+/// # AddToCollectionView
+///
+/// Formulario para agregar o actualizar un manga en la **colección local**
+/// usando SwiftData.  Permite marcar la colección completa, indicar la
+/// cantidad de tomos poseídos y el tomo actualmente en lectura.
+///
+/// ## Overview
+/// - Verifica duplicados con un predicado ``#Predicate`` sobre `mangaID`.
+/// - Si la entrada ya existe actualiza campos; de lo contrario crea una nueva
+///   instancia de ``UserCollectionEntry``.
+/// - Llama `modelContext.save()` y cierra el sheet con ``dismiss``.
+///
+/// ## Form Fields
+/// | Campo | Tipo | Descripción |
+/// |-------|------|-------------|
+/// | Toggle | Bool | `completeCollection` |
+/// | Stepper | Int  | Número de tomos poseídos (`volumesOwned`) |
+/// | Picker  | Int? | Tomo en lectura (`readingVolume`) |
+///
+/// ## Usage
+/// ```swift
+/// .sheet(item: $selectedManga) { manga in
+///     NavigationStack {
+///         AddToCollectionView(manga: manga)
+///     }
+/// }
+/// ```
+///
+/// ## See Also
+/// - ``UserCollectionEntry``
+/// - ``MangaDTO``
+///
+/// ## Author
+/// Creado por Juan Ignacio Antolini — 2025
+///
 struct AddToCollectionView: View {
     let manga: MangaDTO
     @Environment(\.dismiss) var dismiss

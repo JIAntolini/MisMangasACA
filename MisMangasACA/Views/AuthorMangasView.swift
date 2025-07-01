@@ -1,5 +1,42 @@
 import SwiftUI // Importado para habilitar propiedades de vista
 
+/// # AuthorMangasView
+///
+/// Vista que muestra la lista paginada de **mangas** asociados a un autor
+/// seleccionado desde ``AuthorsView``.  Utiliza ``AuthorMangasViewModel``
+/// para obtener los datos e implementa *infinite scroll* al llegar al final.
+///
+/// ## Overview
+/// - Descarga la primera página en `.task { await viewModel.loadPage(1) }`.  
+/// - Cada celda muestra portada, título y el rol del autor en ese manga.  
+/// - Al aparecer la última celda visible, ``loadNextPageIfNeeded(currentItem:)``
+///   solicita la página siguiente si existe.
+/// - Navega a ``DetailView`` al tocar un manga.
+///
+/// ## Usage
+/// ```swift
+/// NavigationLink {
+///     AuthorMangasView(author: author)
+/// } label: {
+///     Text(author.fullName)
+/// }
+/// ```
+///
+/// ## Topics
+/// ### Subvistas
+/// - ``DetailView``
+///
+/// ### ViewModel
+/// - ``AuthorMangasViewModel``
+///
+/// ## See Also
+/// - ``AuthorsView``
+/// - ``AuthorDTO``
+/// - ``MangaDTO``
+///
+/// ## Author
+/// Creado por Juan Ignacio Antolini — 2025
+///
 struct AuthorMangasView: View {
     @StateObject var viewModel: AuthorMangasViewModel
 
