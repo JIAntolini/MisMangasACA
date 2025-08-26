@@ -159,6 +159,11 @@ struct CollectionView: View {
             let entry = entries[index]
             modelContext.delete(entry)
         }
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            // En producción podríamos mostrar un alert; por ahora, log al debugger.
+            print("❌ Error guardando en SwiftData:", error)
+        }
     }
 }
