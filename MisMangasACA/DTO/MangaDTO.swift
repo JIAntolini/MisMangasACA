@@ -103,19 +103,6 @@ struct DemographicDTO: Decodable {
     }
 }
 
-/*struct AuthorDTO: Decodable {
-    let id: String           // UUID
-    let role: String?           // “Story & Art”, etc.
-    let firstName: String
-    let lastName: String?
-
-    private enum CodingKeys: String, CodingKey {
-        case id, role, firstName, lastName
-    }
-}
-*/
-
-
 extension GenreDTO: IdentifiableDTO { typealias Identifier = String }
 extension ThemeDTO: IdentifiableDTO { typealias Identifier = String }
 extension DemographicDTO: IdentifiableDTO { typealias Identifier = String }
