@@ -104,7 +104,7 @@ struct CollectionView: View {
                     coverImage(for: entry)
                         .frame(width: 60, height: 90)
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(entry.title).font(.headline)
+                        Text(entry.title).font(.headline).foregroundStyle(.primary)
                         if entry.completeCollection {
                             Text("Colección completa")
                                 .font(.footnote)
@@ -121,6 +121,7 @@ struct CollectionView: View {
                     Text(entry.title)
                         .font(.headline)
                         .lineLimit(2)
+                        .foregroundStyle(.primary)
                     if entry.completeCollection {
                         Text("Completo")
                             .font(.caption)
@@ -159,6 +160,12 @@ struct CollectionView: View {
             let entry = entries[index]
             modelContext.delete(entry)
         }
-        try? modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            // En producción podríamos mostrar un alert; por ahora, log al debugger.
+            print("❌ Error guardando en SwiftData:", error)
+        }
     }
 }
+
