@@ -140,7 +140,6 @@ open class APIService {
     /// - Returns: PaginatedResponse<MangaDTO>
     func fetchMangas(page: Int = 1, per: Int = 10) async throws -> PaginatedResponse<MangaDTO> {
         // Construir query para mantener coherencia per en todas las páginas
-        // [oai_citation:2‡Práctica.pdf](file-service://file-U4H44ffK4xdC7GT7AEwHYL)
         let path = "/list/mangas"
         let queries = [
             URLQueryItem(name: "page", value: "\(page)"),
