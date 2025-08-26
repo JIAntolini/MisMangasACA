@@ -94,7 +94,10 @@ open class APIService {
     // MARK: – Método genérico para peticiones GET paginadas o normales
     func request<T: Decodable>(
         path: String,
-        queryItems: [URLQueryItem] = []
+        method: HTTPMethod = .GET,
+        queryItems: [URLQueryItem] = [],
+        body: Data? = nil,
+        headers: [String: String] = [:]
     ) async throws -> T {
         // 1. Construir URL completo
         var components = URLComponents(url: baseURL.appendingPathComponent(path), resolvingAgainstBaseURL: false)!
@@ -102,17 +105,19 @@ open class APIService {
             components.queryItems = queryItems
         }
 
-        let urlRequest = buildRequest(url: components.url!, method: .GET)
-        
+        var urlRequest = buildRequest(url: components.url!, method: method)
+        headers.forEach { urlRequest.setValue($1, forHTTPHeaderField: $0) }
+        urlRequest.httpBody = body
+
         // 2. Ejecutar petición con URLSession
         let (data, response) = try await session.data(for: urlRequest)
-        
+
         // 3. Verificar estado HTTP
         guard let httpResp = response as? HTTPURLResponse,
               200..<300 ~= httpResp.statusCode else {
             throw URLError(.badServerResponse)
         }
-        
+
         // 4. Decodificar JSON a modelo genérico
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
@@ -233,20 +238,7 @@ open class APIService {
     /// La API devuelve un array de autores (sin paginación).
     /// - Returns: Array de AuthorDTO
     func fetchAllAuthors() async throws -> [AuthorDTO] {
-        let path = "/list/authors"
-        let url = baseURL.appendingPathComponent(path)
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue(appToken, forHTTPHeaderField: "App-Token")
-        
-        let (data, response) = try await session.data(for: request)
-        guard let httpResp = response as? HTTPURLResponse,
-              200..<300 ~= httpResp.statusCode else {
-            throw URLError(.badServerResponse)
-        }
-        
-        let decoder = JSONDecoder()
-        return try decoder.decode([AuthorDTO].self, from: data)
+        return try await request(path: "/list/authors")
     }
     
     // MARK: – 5. Mangas por autor
@@ -308,25 +300,15 @@ open class APIService {
     /// - Returns: Paginado de MangaDTO.
     open func customSearch(_ search: CustomSearch, page: Int = 1, per: Int = 10) async throws -> PaginatedResponse<MangaDTO> {
         let path = "/search/manga"
-        var components = URLComponents(url: baseURL.appendingPathComponent(path), resolvingAgainstBaseURL: false)!
-        components.queryItems = [
+        let queries = [
             URLQueryItem(name: "page", value: "\(page)"),
             URLQueryItem(name: "per",  value: "\(per)")
         ]
-        var req = URLRequest(url: components.url!)
-        req.httpMethod = "POST"
-        req.setValue(appToken, forHTTPHeaderField: "App-Token")
-        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
-        req.httpBody = try encoder.encode(search)
-        let (data, response) = try await session.data(for: req)
-        guard let httpResp = response as? HTTPURLResponse, 200..<300 ~= httpResp.statusCode else {
-            throw URLError(.badServerResponse)
-        }
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-        return try decoder.decode(PaginatedResponse<MangaDTO>.self, from: data)
+        let body = try encoder.encode(search)
+        let headers = ["Content-Type": "application/json"]
+        return try await request(path: path, method: .POST, queryItems: queries, body: body, headers: headers)
     }
 }
 
