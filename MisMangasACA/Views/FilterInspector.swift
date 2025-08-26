@@ -86,17 +86,6 @@ struct FilterInspector: View {
                         }
                     }
                 }
-                
-                Section {
-                    Button("Aplicar") {
-                        dismiss()   // Cierra primero
-                        Task {
-                            await vm.applyFilters()
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                }
             }
             .onAppear {
                 if demoRows.isEmpty {
